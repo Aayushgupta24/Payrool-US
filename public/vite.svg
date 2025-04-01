@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
+  <path d="M40,10 L10,40 L20,50 L50,20 Z" fill="#5ee8a3"/>
+  <path d="M50,20 L20,50 L30,60 L60,30 Z" fill="#00a0a0"/>
+  <text x="70" y="35" font-family="Arial" font-weight="bold" font-size="20" fill="#333">Growth</text>
+  <text x="150" y="35" font-family="Arial" font-weight="bold" font-size="20" fill="#333">Pods</text>
+  <text x="70" y="55" font-family="Arial" font-size="12" fill="#666">Hire. Pay. Manage.</text>
+</svg>
