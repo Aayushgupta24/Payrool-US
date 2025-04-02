@@ -1,75 +1,56 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import '../pages/EmployeeDashboard.css';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FiGrid, FiUsers, FiLogOut } from 'react-icons/fi';
+import '../styles/Sidebar.css';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
+  const menuItems = [
+    {
+      title: 'Dashboard',
+      icon: <FiGrid size={20} />,
+      path: '/admin',
+    },
+    {
+      title: 'Users',
+      icon: <FiUsers size={20} />,
+      path: '/admin/users',
+    },
+  ];
 
   return (
     <div className="sidebar">
-      <div className="logo-container">
-        <img src="/logo.svg" alt="Growth Pods Logo" className="logo" />
-        <div className="logo-text">
-          <h2>Growth Pods</h2>
-          <p className="tagline">Hire. Pay. Manage.</p>
+      <div className="sidebar-header">
+        <div className="logo-container">
+          <img src="/logo.svg" alt="Growth Pods" className="h-8" />
+          <span className="logo-text">Growth Pods</span>
+          <span className="logo-tagline">Hire. Pay. Manage.</span>
         </div>
       </div>
-      
-      <h3 className="sidebar-title">GrowthPods Demo</h3>
-      <div className="divider"></div>
-      
-      <div className="dropdown">
-        <button className="dropdown-btn">
-          Select employee
-          <span className="dropdown-arrow">▼</span>
+
+      <div className="menu-divider" />
+
+      <nav className="sidebar-nav">
+        {menuItems.map((item) => (
+          <button 
+            key={item.path}
+            className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
+            onClick={() => navigate(item.path)}
+          >
+            <span className="icon-container">{item.icon}</span>
+            <span className="nav-title">{item.title}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <button className="nav-btn" onClick={() => navigate('/logout')}>
+          <span className="icon-container"><FiLogOut size={20} /></span>
+          <span className="nav-title">Sign out</span>
         </button>
       </div>
-      
-      <nav className="sidebar-nav">
-        <button 
-          className={`nav-btn ${location.pathname === '/employee' ? 'active' : ''}`}
-          onClick={() => handleNavigation('/employee')}
-        >
-          <i className="icon dashboard-icon"></i>
-          Dashboard
-        </button>
-        <button 
-          className={`nav-btn ${location.pathname === '/employee/details' ? 'active' : ''}`}
-          onClick={() => handleNavigation('/employee/details')}
-        >
-          <i className="icon info-icon"></i>
-          Your details
-        </button>
-        <button 
-          className={`nav-btn ${location.pathname === '/employee/paystubs' ? 'active' : ''}`}
-          onClick={() => handleNavigation('/employee/paystubs')}
-        >
-          <i className="icon paystub-icon"></i>
-          Paystub
-        </button>
-        <button 
-          className={`nav-btn ${location.pathname === '/employee/documents' ? 'active' : ''}`}
-          onClick={() => handleNavigation('/employee/documents')}
-        >
-          <i className="icon documents-icon"></i>
-          Documents
-        </button>
-      </nav>
-      
-      <div className="divider"></div>
-      
-      <button 
-        className="nav-btn admin-btn"
-        onClick={() => handleNavigation('/admin')}
-      >
-        <i className="icon admin-icon"></i>
-        Switch to admin
-      </button>
     </div>
   );
 };

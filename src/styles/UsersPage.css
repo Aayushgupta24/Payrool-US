@@ -1,0 +1,16 @@
+.users-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table td, .users-table th {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.users-table tbody tr:hover {
+  background-color: #f9fafb;
+}
