@@ -1,14 +1,27 @@
 import React from 'react';
 import DocumentTable from '../components/DocumentTable';
-import { Document } from '../types';
 
 const TeamDocuments: React.FC = () => {
-  // In a real app, this would come from an API
-  const documents: Document[] = [];
+  // Example data - replace with actual data from your backend
+  const teamDocuments = [
+    {
+      id: '1',
+      fileName: 'Employee Handbook.pdf',
+      uploadedBy: 'HR Manager',
+      dateUploaded: '2024-01-15'
+    },
+    {
+      id: '2',
+      fileName: 'Company Policies.pdf',
+      uploadedBy: 'Admin',
+      dateUploaded: '2024-01-10'
+    }
+  ];
 
   return (
-    <div className="w-full">
-      <DocumentTable documents={documents} />
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Team Documents</h2>
+      <DocumentTable documents={teamDocuments} />
     </div>
   );
 };
