@@ -1,87 +1,107 @@
-// File: src/components/EmployeeDashboard.tsx
-import React from 'react';
-import Sidebar from '../components/Sidebar';
-import './EmployeeDashboard.css';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+interface Employee {
+  id: string;
+  name: string;
+  details: {
+    tasks: Array<{
+      id: string;
+      title: string;
+      status: string;
+      dueDate: string;
+    }>;
+    payroll: {
+      nextPayDate: string;
+      nextPayAmount: string;
+      lastPayDate: string;
+      lastPayAmount: string;
+    };
+  };
+}
+
+const mockEmployees: Employee[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    details: {
+      tasks: [
+        {
+          id: 't1',
+          title: 'Complete W-4 Form',
+          status: 'pending',
+          dueDate: '2024-03-15'
+        },
+        {
+          id: 't2',
+          title: 'Submit timesheet',
+          status: 'pending',
+          dueDate: '2024-03-10'
+        }
+      ],
+      payroll: {
+        nextPayDate: 'March 15, 2024',
+        nextPayAmount: '$3,500.00',
+        lastPayDate: 'February 29, 2024',
+        lastPayAmount: '$3,500.00'
+      }
+    }
+  }
+  // Add more employees as needed
+];
 
 const EmployeeDashboard: React.FC = () => {
+  const [selectedEmployee, setSelectedEmployee] = useState('1');
+  const employee = mockEmployees.find(emp => emp.id === selectedEmployee);
+
   return (
-    <div className="dashboard-container">
-      <Sidebar />
-      
-      {/* Main Content */}
-      <div className="main-content">
-        <header className="user-header">
-          <h1>Russell Washington</h1>
-        </header>
-        
-        {/* Tasks Section */}
-        <section className="section">
-          <h2 className="section-title">Tasks</h2>
-          <div className="divider"></div>
+    <div className="flex-1 p-8 bg-gray-50">
+      {!employee ? (
+        <div className="text-center text-gray-500">
+          No employee found
+        </div>
+      ) : (
+        <div>
+          <h1 className="text-2xl font-medium mb-8">{employee.name}</h1>
           
-          <div className="task-cards">
-            {/* Direct Deposit Task */}
-            <div className="task-card">
-              <div className="task-content">
-                <div className="task-icon">
-                  <i className="document-icon"></i>
+          {/* Tasks Section */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Tasks</h2>
+            <div className="border-t border-gray-200 mb-6"></div>
+            <div className="space-y-4">
+              {employee.details.tasks.map(task => (
+                <div key={task.id} className="bg-white p-4 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">{task.title}</h3>
+                    <span className="text-sm text-gray-500">Due: {task.dueDate}</span>
+                  </div>
+                  <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                    {task.status}
+                  </span>
                 </div>
-                <div className="task-details">
-                  <h3>Link direct deposit account</h3>
-                  <p>Connect your direct deposit account</p>
-                </div>
-              </div>
-              <button className="task-btn green-btn">Connect bank</button>
-            </div>
-            
-            {/* Federal W-4 Task */}
-            <div className="task-card">
-              <div className="task-content">
-                <div className="task-icon">
-                  <i className="document-icon"></i>
-                </div>
-                <div className="task-details">
-                  <h3>Complete Federal W-4</h3>
-                  <p>Complete your federal tax holding forms</p>
-                </div>
-              </div>
-              <button className="task-btn green-btn">Complete Federal W-4</button>
-            </div>
-            
-            {/* State W-4 Task */}
-            <div className="task-card">
-              <div className="task-content">
-                <div className="task-icon">
-                  <i className="document-icon"></i>
-                </div>
-                <div className="task-details">
-                  <h3>Complete state W-4</h3>
-                  <p>Complete your state tax holding forms</p>
-                </div>
-              </div>
-              <button className="task-btn green-btn">Complete state W-4</button>
+              ))}
             </div>
           </div>
-        </section>
-        
-        {/* Payroll Details Section */}
-        <section className="section">
-          <h2 className="section-title">Payroll details</h2>
-          <div className="divider"></div>
-          
-          <div className="payroll-cards">
-            <div className="payroll-card">
-              <h3>Next payroll</h3>
-              {/* Content would go here */}
-            </div>
-            
-            <div className="payroll-card">
-              <h3>Last payroll</h3>
-              {/* Content would go here */}
+
+          {/* Payroll Section */}
+          <div>
+            <h2 className="text-xl font-medium mb-4">Payroll</h2>
+            <div className="border-t border-gray-200 mb-6"></div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Next payroll</h3>
+                <p className="text-2xl font-semibold">{employee.details.payroll.nextPayAmount}</p>
+                <p className="text-sm text-gray-500 mt-1">{employee.details.payroll.nextPayDate}</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Last payroll</h3>
+                <p className="text-2xl font-semibold">{employee.details.payroll.lastPayAmount}</p>
+                <p className="text-sm text-gray-500 mt-1">{employee.details.payroll.lastPayDate}</p>
+              </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

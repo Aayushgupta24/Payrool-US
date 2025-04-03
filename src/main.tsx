@@ -11,6 +11,7 @@ import PersonalDocuments from './pages/PersonalDocuments';
 import PaystubsPage from './pages/PaystubsPage';
 import UsersPage from './pages/UsersPage';
 import EmployerLayout from './layouts/EmployerLayout';
+import EmployeeLayout from './layouts/EmployeeLayout';
 import EmployerDashboard from './pages/EmployerDashboard';
 import PayrollPage from './pages/PayrollPage';
 import HiringPage from './pages/HiringPage';
@@ -21,14 +22,15 @@ import BenefitsPage from './pages/BenefitsPage';
 import TaxesPage from './pages/TaxesPage';
 import './index.css';
 import AddEmployeePage from './pages/AddEmployeePage';
-import AddIndependentContractorPage from './pages/AddIndependentContractorPage.tsx';
-import AddBusinessContractorPage from './pages/AddBusinessContractorPage.tsx';
+import AddIndependentContractorPage from './pages/AddIndependentContractorPage';
+import AddBusinessContractorPage from './pages/AddBusinessContractorPage';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
   },
+  // Admin routes
   {
     path: "/admin",
     element: <AdminDashboard />,
@@ -37,32 +39,38 @@ const router = createBrowserRouter([
     path: "/admin/users",
     element: <UsersPage />,
   },
-  // Employee routes
+  // Employee routes with shared layout
   {
     path: "/employee",
-    element: <EmployeeDashboard />,
-  },
-  {
-    path: "/employee/details",
-    element: <EmployeeDetailsPage />,
-  },
-  {
-    path: "/employer/documents",
-    element: <DocumentsPage />,
+    element: <EmployeeLayout />,
     children: [
       {
-        path: "team",
-        element: <TeamDocuments />,
+        path: "dashboard",
+        element: <EmployeeDashboard />,
       },
       {
-        path: "personal",
-        element: <PersonalDocuments />,
-      }
+        path: "details",
+        element: <EmployeeDetailsPage />,
+      },
+      {
+        path: "documents",
+        element: <DocumentsPage />,
+        children: [
+          {
+            path: "team",
+            element: <TeamDocuments />,
+          },
+          {
+            path: "personal",
+            element: <PersonalDocuments />,
+          }
+        ]
+      },
+      {
+        path: "paystubs",
+        element: <PaystubsPage />,
+      },
     ]
-  },
-  {
-    path: "/employer/paystubs",
-    element: <PaystubsPage />,
   },
   // Employer routes with shared layout
   {
