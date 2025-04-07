@@ -1,21 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { FiRefreshCcw, FiLogOut } from 'react-icons/fi';
+import {
+  FiGrid, FiUser, FiFileText, FiDollarSign, 
+  FiRefreshCcw, FiLogOut
+} from 'react-icons/fi';
 
 const EmployeeSidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
 
   const menuItems = [
-    { icon: '📊', label: 'Dashboard', path: '/employee/dashboard' },
-    { icon: '👤', label: 'Your Details', path: '/employee/details' },
-    { icon: '📄', label: 'Documents', path: '/employee/documents' },
-    { icon: '💰', label: 'Paystubs', path: '/employee/paystubs' },
+    { icon: <FiGrid size={20} />, label: 'Dashboard', path: '/employee/dashboard' },
+    { icon: <FiUser size={20} />, label: 'Your Details', path: '/employee/details' },
+    { icon: <FiFileText size={20} />, label: 'Documents', path: '/employee/documents' },
+    { icon: <FiDollarSign size={20} />, label: 'Paystubs', path: '/employee/paystubs' },
   ];
-
-  const isPathActive = (path: string) => {
-    return location.pathname.startsWith(path);
-  };
 
   const handleSwitchToAdmin = () => {
     navigate('/admin');
@@ -26,53 +26,84 @@ const EmployeeSidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-64 bg-white border-r h-screen flex flex-col">
-      {/* Main content */}
-      <div className="p-6 flex-1">
-        <div className="mb-8">
-          <img src="/growth-pods-logo.svg" alt="Growth Pods" className="h-8 mb-2" />
-          <div className="text-sm text-gray-500">Hire. Pay. Manage.</div>
+    <>
+      <div 
+        className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out z-50 ${
+          isHovered ? 'w-64' : 'w-16'
+        }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Company Logo */}
+        <div className={`px-4 py-6 ${isHovered ? 'px-6' : 'px-2'}`}>
+          {isHovered ? (
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">GrowthPods Demo</h2>
+              <div className="text-sm text-gray-500">Hire. Pay. Manage.</div>
+            </div>
+          ) : (
+            <div className="w-8 h-8">
+              <img src="/growth-pods-logo.svg" alt="GP" className="w-full h-full" />
+            </div>
+          )}
         </div>
-        
-        <nav className="space-y-1">
+
+        {/* Divider */}
+        <div className="h-px bg-gray-200" />
+
+        {/* Navigation Menu */}
+        <nav className={`flex-1 ${isHovered ? 'px-3' : 'px-2'} py-6 overflow-y-auto`}>
           {menuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                isPathActive(item.path)
-                  ? 'bg-teal-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-teal-600'
-              }`}
+              className={`
+                flex items-center px-3 py-2 mb-1 rounded-lg text-sm font-medium
+                ${location.pathname === item.path
+                  ? 'bg-teal-600 text-white' 
+                  : 'text-gray-900 hover:bg-gray-100'}
+                ${!isHovered ? 'justify-center' : ''}
+              `}
             >
-              <span className="mr-3">{item.icon}</span>
-              {item.label}
+              <span className={isHovered ? 'mr-3' : ''}>{item.icon}</span>
+              {isHovered && <span className="truncate">{item.label}</span>}
             </Link>
           ))}
         </nav>
+
+        {/* Bottom section */}
+        <div className={`${isHovered ? 'px-3' : 'px-2'} py-4 border-t border-gray-200`}>
+          <button
+            onClick={handleSwitchToAdmin}
+            className={`
+              flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 
+              hover:bg-gray-100 rounded-lg mb-2
+              ${!isHovered ? 'justify-center' : ''}
+            `}
+          >
+            <FiRefreshCcw className={isHovered ? 'mr-3' : ''} size={20} />
+            {isHovered && 'Switch to Admin'}
+          </button>
+          <button
+            onClick={handleSignOut}
+            className={`
+              flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 
+              hover:bg-gray-100 rounded-lg
+              ${!isHovered ? 'justify-center' : ''}
+            `}
+          >
+            <FiLogOut className={isHovered ? 'mr-3' : ''} size={20} />
+            {isHovered && 'Sign out'}
+          </button>
+        </div>
       </div>
 
-      {/* Bottom section with Switch to Admin and Sign out */}
-      <div className="p-6 border-t space-y-2">
-        <button
-          onClick={handleSwitchToAdmin}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-600 rounded-md"
-        >
-          <FiRefreshCcw className="mr-3" />
-          Switch to Admin
-        </button>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-teal-600 rounded-md"
-        >
-          <FiLogOut className="mr-3" />
-          Sign out
-        </button>
+      {/* Main content margin */}
+      <div className={`${isHovered ? 'ml-64' : 'ml-16'} transition-all duration-300 ease-in-out`}>
+        {/* Your main content goes here */}
       </div>
-    </div>
+    </>
   );
 };
 
 export default EmployeeSidebar;
-
-

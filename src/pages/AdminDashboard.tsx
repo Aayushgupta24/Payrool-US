@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { FiRefreshCcw } from 'react-icons/fi';
 import { adminService, type AdminCompanyResponse } from '../services/adminService';
 
 const AdminDashboard: React.FC = () => {
@@ -54,6 +55,10 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleSwitchToEmployee = () => {
+    navigate('/employee/dashboard');
+  };
+
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar />
@@ -61,9 +66,18 @@ const AdminDashboard: React.FC = () => {
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Welcome Raj R</h1>
-          <button className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">
-            Add New Company
-          </button>
+          <div className="flex space-x-4">
+            <button
+              onClick={handleSwitchToEmployee}
+              className="flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              <FiRefreshCcw className="mr-2" />
+              Switch to Employee
+            </button>
+            <button className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">
+              Add New Company
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-6">

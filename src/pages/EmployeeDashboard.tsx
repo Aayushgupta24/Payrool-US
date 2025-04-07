@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiRefreshCcw } from 'react-icons/fi';
 
 interface Employee {
   id: string;
@@ -51,8 +52,13 @@ const mockEmployees: Employee[] = [
 ];
 
 const EmployeeDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedEmployee, setSelectedEmployee] = useState('1');
   const employee = mockEmployees.find(emp => emp.id === selectedEmployee);
+
+  const handleSwitchToAdmin = () => {
+    navigate('/admin');
+  };
 
   return (
     <div className="flex-1 p-8 bg-gray-50">
@@ -62,7 +68,16 @@ const EmployeeDashboard: React.FC = () => {
         </div>
       ) : (
         <div>
-          <h1 className="text-2xl font-medium mb-8">{employee.name}</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-medium">{employee.name}</h1>
+            <button
+              onClick={handleSwitchToAdmin}
+              className="flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              <FiRefreshCcw className="mr-2" />
+              Switch to Admin
+            </button>
+          </div>
           
           {/* Tasks Section */}
           <div className="mb-8">

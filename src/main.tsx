@@ -25,6 +25,8 @@ import AddEmployeePage from './pages/AddEmployeePage';
 import AddIndependentContractorPage from './pages/AddIndependentContractorPage';
 import AddBusinessContractorPage from './pages/AddBusinessContractorPage';
 import BusinessDocuments from './pages/BusinessDocuments';
+import EmployerSettingsPage from './pages/EmployerSettingsPage';
+import EmployerHelpPage from './pages/EmployerHelpPage';
 
 const router = createBrowserRouter([
   {
@@ -125,6 +127,14 @@ const router = createBrowserRouter([
       {
         path: "taxes",
         element: <TaxesPage />,
+      },
+      {
+        path: "settings",
+        element: <EmployerSettingsPage />,
+      },
+      {
+        path: "help",
+        element: <EmployerHelpPage />,
       }
     ]
   }

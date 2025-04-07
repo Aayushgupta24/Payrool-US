@@ -6,7 +6,7 @@ const EmployerLayout: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <EmployerSidebar />
-      <div className="flex-1">
+      <div className="flex-1 ml-16">
         <Outlet />
       </div>
     </div>
