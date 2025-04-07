@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddTeamMemberModal from '../components/AddTeamMemberModal';
 
@@ -7,6 +7,14 @@ interface EmployerDashboardProps {}
 const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
   const navigate = useNavigate();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const storedCompany = localStorage.getItem('selectedCompany');
+    if (storedCompany) {
+      setCompanyInfo(JSON.parse(storedCompany));
+    }
+  }, []);
 
   const handlePayContractors = () => {
     navigate('/employer/payroll', { state: { activeTab: 'Pay Contractors' } });
@@ -20,7 +28,9 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
     <div className="flex-1 p-8">
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Tex James</h1>
+          <h1 className="text-2xl font-semibold">
+            {companyInfo?.company || 'GrowthPods Demo'}
+          </h1>
           <div className="flex space-x-4">
             <button 
               onClick={() => setShowAddTeamMemberModal(true)}
