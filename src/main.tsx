@@ -24,6 +24,7 @@ import './index.css';
 import AddEmployeePage from './pages/AddEmployeePage';
 import AddIndependentContractorPage from './pages/AddIndependentContractorPage';
 import AddBusinessContractorPage from './pages/AddBusinessContractorPage';
+import BusinessDocuments from './pages/BusinessDocuments';
 
 const router = createBrowserRouter([
   {
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
         path: "documents",
         element: <DocumentsPage />,
         children: [
+          {
+            path: "business",
+            element: <BusinessDocuments />,
+          },
           {
             path: "team",
             element: <TeamDocuments />,

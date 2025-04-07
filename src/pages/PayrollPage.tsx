@@ -5,8 +5,7 @@ import { FiSearch, FiFilter, FiDownload } from 'react-icons/fi';
 const PayrollPage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('Pay Employees');
-  const [selectedPayPeriod, setSelectedPayPeriod] = useState('September 16, 2024 to September 30, 2024 - Regular');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPayPeriod, setSelectedPayPeriod] = useState('September 30, 2024 to October 14, 2024 - Regular');
 
   useEffect(() => {
     if (location.state?.activeTab) {
@@ -31,6 +30,7 @@ const PayrollPage: React.FC = () => {
 
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
+      {/* Top Navigation */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -38,10 +38,10 @@ const PayrollPage: React.FC = () => {
               {['Payroll Summary', 'Pay Employees', 'Pay Contractors', 'Payroll History'].map((tab) => (
                 <button
                   key={tab}
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
+                  className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded ${
                     activeTab === tab
-                      ? 'border-teal-600 text-teal-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'bg-teal-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -49,11 +49,35 @@ const PayrollPage: React.FC = () => {
                 </button>
               ))}
             </div>
+            <div className="flex items-center space-x-4">
+              <button className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
+                Start Payroll
+              </button>
+              <button className="text-gray-700 p-2 hover:bg-gray-50 rounded">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      {/* Pay Period Selector */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <select
+          value={selectedPayPeriod}
+          onChange={(e) => setSelectedPayPeriod(e.target.value)}
+          className="w-full p-2 border rounded bg-white"
+        >
+          <option value="September 30, 2024 to October 14, 2024 - Regular">
+            September 30, 2024 to October 14, 2024 - Regular
+          </option>
+        </select>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {renderContent()}
       </div>
     </div>
@@ -270,33 +294,6 @@ const PayrollSummary: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-gray-500 text-sm mb-2">Contractor Payroll</h3>
           <p className="text-2xl font-bold">${summaryData.contractorPayroll.toFixed(2)}</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-gray-500 text-sm mb-2">Team Members</h3>
-          <p className="text-2xl font-bold">{summaryData.totalEmployees + summaryData.totalContractors}</p>
-          <div className="text-sm text-gray-500 mt-2">
-            <span>{summaryData.totalEmployees} Employees</span>
-            <span className="mx-2">•</span>
-            <span>{summaryData.totalContractors} Contractors</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Upcoming Payroll</h3>
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-gray-500">Next payroll date</p>
-            <p className="text-xl font-semibold">{summaryData.nextPayrollDate}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Upcoming payments</p>
-            <p className="text-xl font-semibold">${summaryData.upcomingPayments.toFixed(2)}</p>
-          </div>
-          <button className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
-            View Details
-          </button>
         </div>
       </div>
     </div>

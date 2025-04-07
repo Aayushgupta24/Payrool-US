@@ -1,118 +1,166 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AddTeamMemberModal from '../components/AddTeamMemberModal';
+import api from '../services/apiConfig';
 
 interface TeamMember {
-  name: string;
-  workerType: string;
-  phone: string;
-  startDate: string;
-  status: string;
+  userID: string;
+  user: string;
+  email: string;
+  phoneNumber: string;
+  jobTitle: string;
+  dateOfJoin: string;
+  workerType: {
+    workerType: string;
+  };
+  status?: string;
 }
 
 const HiringPage: React.FC = () => {
+  const navigate = useNavigate();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const teamMembers: TeamMember[] = [
-    {
-      name: "Kamal Patel",
-      workerType: "1099-NEC",
-      phone: "(222) 222-2222",
-      startDate: "08/01/2024",
-      status: "In progress"
-    },
-    {
-      name: "Russell Washington",
-      workerType: "W2",
-      phone: "(845) 837-7575",
-      startDate: "04/08/2024",
-      status: "In progress"
-    },
-    {
-      name: "Zona Johnson",
-      workerType: "W2",
-      phone: "(555) 467-7890",
-      startDate: "01/15/2024",
-      status: "In progress"
-    },
-    {
-      name: "Louis Piper",
-      workerType: "1099-NEC",
-      phone: "(333) 287-3983",
-      startDate: "12/12/2023",
-      status: "In progress"
-    },
-    {
-      name: "Elijah Miller",
-      workerType: "W2",
-      phone: "(322) 202-1202",
-      startDate: "02/02/2020",
-      status: "In progress"
-    },
-    {
-      name: "Peter John",
-      workerType: "W2",
-      phone: "(787) 788-7877",
-      startDate: "01/01/2024",
-      status: "In progress"
-    }
-  ];
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      setLoading(true);
+      try {
+        const selectedCompanyStr = localStorage.getItem('selectedCompany');
+        if (!selectedCompanyStr) {
+          throw new Error('No company selected');
+        }
+
+        const selectedCompany = JSON.parse(selectedCompanyStr);
+        
+        const response = await api.post('/reports', {
+          method: 'getUsersByCompanyName',
+          companyName: selectedCompany.company
+        });
+
+        const data = response.data;
+        console.log('API Response:', data);
+
+        if (data && typeof data === 'object') {
+          let usersData: TeamMember[] = [];
+          
+          if (Array.isArray(data)) {
+            usersData = data;
+          } else if (Array.isArray(data.users)) {
+            usersData = data.users;
+          } else if (data.data && Array.isArray(data.data.users)) {
+            usersData = data.data.users;
+          } else if (data.data && Array.isArray(data.data)) {
+            usersData = data.data;
+          }
+
+          setTeamMembers(usersData);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.error?.message || err.message || 'Failed to fetch team members';
+        console.error('Error fetching team members:', err);
+        setError(errorMessage);
+        setTeamMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeamMembers();
+  }, []);
+
+  const handleAddEmployee = () => {
+    navigate('/employer/hiring/add-employee');
+  };
+
+  const handleAddIndependentContractor = () => {
+    navigate('/employer/hiring/add-independent-contractor');
+  };
+
+  const handleAddBusinessContractor = () => {
+    navigate('/employer/hiring/add-business-contractor');
+  };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Hiring and Onboarding</h1>
-        <button 
-          onClick={() => setShowAddTeamMemberModal(true)}
-          className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
-        >
-          Add team member
-        </button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-4 px-6">Name</th>
-              <th className="text-left py-4 px-6">Worker type</th>
-              <th className="text-left py-4 px-6">Phone</th>
-              <th className="text-left py-4 px-6">Start date</th>
-              <th className="text-left py-4 px-6">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {teamMembers.map((member, index) => (
-              <tr key={index} className="border-b hover:bg-gray-50">
-                <td className="py-4 px-6">{member.name}</td>
-                <td className="py-4 px-6">{member.workerType}</td>
-                <td className="py-4 px-6">{member.phone}</td>
-                <td className="py-4 px-6">{member.startDate}</td>
-                <td className="py-4 px-6">
-                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-                    {member.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="p-4 border-t flex justify-between items-center text-sm text-gray-500">
-          <div>1-6 of 6</div>
-          <div className="flex space-x-2">
-            <button className="p-1 rounded hover:bg-gray-100" disabled>
-              &lt;
+    <div className="flex-1 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-semibold">Hiring and Onboarding</h1>
+          <div className="space-x-4">
+            <button
+              onClick={handleAddEmployee}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Add Employee
             </button>
-            <button className="p-1 rounded hover:bg-gray-100" disabled>
-              &gt;
+            <button
+              onClick={handleAddIndependentContractor}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Add Independent Contractor
+            </button>
+            <button
+              onClick={handleAddBusinessContractor}
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+            >
+              Add Business Contractor
             </button>
           </div>
         </div>
-      </div>
 
-      <AddTeamMemberModal 
-        isOpen={showAddTeamMemberModal}
-        onClose={() => setShowAddTeamMemberModal(false)}
-      />
+        {loading && <div className="text-center py-4">Loading team members...</div>}
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="bg-white shadow rounded-lg">
+            <table className="min-w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {teamMembers.map((member) => (
+                  <tr key={member.userID}>
+                    <td className="px-6 py-4 whitespace-nowrap">{member.user}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{member.jobTitle}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{member.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{member.phoneNumber}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{new Date(member.dateOfJoin).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        member.workerType.workerType === 'Employee' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {member.workerType.workerType}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {showAddTeamMemberModal && (
+          <AddTeamMemberModal
+            isOpen={showAddTeamMemberModal}
+            onClose={() => setShowAddTeamMemberModal(false)}
+          />
+        )}
+      </div>
     </div>
   );
 };

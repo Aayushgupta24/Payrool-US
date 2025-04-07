@@ -1,130 +1,116 @@
 import React, { useState } from 'react';
-import { FiSearch, FiFilter, FiDownload } from 'react-icons/fi';
+import { FiSearch } from 'react-icons/fi';
 
 interface Employee {
   name: string;
-  position: string;
-  salary: string;
+  rate: string;
   hours: number;
-  grossPay: number;
-  deductions: {
-    federal: number;
-    state: number;
-    benefits: number;
-  };
-  netPay: number;
+  additionalComp: number;
+  grossTotal: number;
   paymentMethod: string;
 }
 
 const EmployeePayroll: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPayPeriod, setSelectedPayPeriod] = useState('September 16, 2024 to September 30, 2024');
 
-  const employeeData = {
-    deadline: 'September 26, 2024',
-    payDate: 'September 30, 2024',
-    totalGrossPay: 45750.00,
-    totalDeductions: -12807.50,
-    totalNetPay: 32942.50,
+  const payrollData = {
     employees: [
       {
-        name: 'Michael Chen',
-        position: 'Senior Developer',
-        salary: '145,000.00 / Year',
-        hours: 80,
-        grossPay: 5576.92,
-        deductions: {
-          federal: 1115.38,
-          state: 557.69,
-          benefits: 350.00
-        },
-        netPay: 3553.85,
+        name: 'Tex James',
+        rate: '$8,000.00 / Month',
+        hours: 10,
+        additionalComp: 24.00,
+        grossTotal: 3716.30,
         paymentMethod: 'Direct Deposit'
-      },
-      // Add more employee data as needed
+      }
     ]
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Employee Payroll</h2>
-        <button className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">
-          Run Payroll
-        </button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <select 
-              value={selectedPayPeriod}
-              onChange={(e) => setSelectedPayPeriod(e.target.value)}
-              className="border rounded-md px-3 py-2"
-            >
-              <option value={selectedPayPeriod}>{selectedPayPeriod}</option>
-              {/* Add more pay periods */}
-            </select>
-            <div className="flex items-center border rounded-md px-3 py-2">
-              <FiSearch className="text-gray-400 mr-2" />
-              <input
-                type="text"
-                placeholder="Search employees..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="outline-none"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button className="flex items-center text-gray-600 hover:text-gray-800">
-              <FiFilter className="mr-2" />
-              Filter
-            </button>
-            <button className="flex items-center text-gray-600 hover:text-gray-800">
-              <FiDownload className="mr-2" />
-              Export
-            </button>
+    <div className="bg-white rounded-lg shadow">
+      <div className="p-6">
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative w-64">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
+              <FiSearch className="h-5 w-5 text-gray-400" />
+            </span>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
 
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-3">Employee</th>
-              <th className="text-left py-3">Position</th>
-              <th className="text-right py-3">Salary</th>
-              <th className="text-right py-3">Hours</th>
-              <th className="text-right py-3">Gross Pay</th>
-              <th className="text-right py-3">Deductions</th>
-              <th className="text-right py-3">Net Pay</th>
-              <th className="text-left py-3">Payment Method</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employeeData.employees.map((employee, index) => (
-              <tr key={index} className="border-b">
-                <td className="py-4">{employee.name}</td>
-                <td>{employee.position}</td>
-                <td className="text-right">{employee.salary}</td>
-                <td className="text-right">{employee.hours}</td>
-                <td className="text-right">${employee.grossPay.toFixed(2)}</td>
-                <td className="text-right">-${(employee.deductions.federal + employee.deductions.state + employee.deductions.benefits).toFixed(2)}</td>
-                <td className="text-right">${employee.netPay.toFixed(2)}</td>
-                <td>{employee.paymentMethod}</td>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 text-sm font-normal text-gray-500">Name</th>
+                <th className="text-left py-3 text-sm font-normal text-gray-500">Rate</th>
+                <th className="text-left py-3 text-sm font-normal text-gray-500">Hours</th>
+                <th className="text-left py-3 text-sm font-normal text-gray-500">
+                  Additional comp
+                  <button className="ml-1 text-gray-400 hover:text-gray-500">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </th>
+                <th className="text-left py-3 text-sm font-normal text-gray-500">
+                  Gross total
+                  <button className="ml-1 text-gray-400 hover:text-gray-500">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </th>
+                <th className="text-left py-3 text-sm font-normal text-gray-500">Payment method</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="font-semibold">
-              <td colSpan={4} className="py-4">Total</td>
-              <td className="text-right">${employeeData.totalGrossPay.toFixed(2)}</td>
-              <td className="text-right">${employeeData.totalDeductions.toFixed(2)}</td>
-              <td className="text-right">${employeeData.totalNetPay.toFixed(2)}</td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {payrollData.employees.map((employee, index) => (
+                <tr key={index}>
+                  <td className="py-4 text-sm">{employee.name}</td>
+                  <td className="py-4 text-sm">{employee.rate}</td>
+                  <td className="py-4 text-sm">{employee.hours}</td>
+                  <td className="py-4 text-sm">${employee.additionalComp.toFixed(2)}</td>
+                  <td className="py-4 text-sm">${employee.grossTotal.toFixed(2)}</td>
+                  <td className="py-4 text-sm">{employee.paymentMethod}</td>
+                </tr>
+              ))}
+              <tr>
+                <td className="py-4 text-sm font-medium">Total</td>
+                <td></td>
+                <td></td>
+                <td className="py-4 text-sm font-medium">${payrollData.employees.reduce((sum, emp) => sum + emp.additionalComp, 0).toFixed(2)}</td>
+                <td className="py-4 text-sm font-medium">${payrollData.employees.reduce((sum, emp) => sum + emp.grossTotal, 0).toFixed(2)}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-end space-x-2 mt-4 text-sm text-gray-500">
+          <span>1-2 of 2</span>
+          <div className="flex items-center space-x-1">
+            <button className="p-1 disabled:opacity-50" disabled>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <button className="p-1 disabled:opacity-50" disabled>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 15.707a1 1 0 001.414 0l5-5a1 1 0 000-1.414l-5-5a1 1 0 00-1.414 1.414L8.586 10l-4.293 4.293a1 1 0 000 1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

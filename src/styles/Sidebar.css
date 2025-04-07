@@ -1,11 +1,37 @@
 .sidebar {
-  width: 240px;
+  width: 256px;
   min-height: 100vh;
   background-color: white;
   border-right: 1px solid #e5e7eb;
-  padding: 1.5rem;
   display: flex;
   flex-direction: column;
+}
+
+.sidebar nav a {
+  transition: all 0.2s;
+}
+
+.sidebar nav a:hover {
+  background-color: #f3f4f6;
+}
+
+.sidebar nav a.active {
+  background-color: #008080;
+  color: white;
+}
+
+.sidebar nav a.active svg {
+  color: white;
+}
+
+.sidebar nav svg {
+  min-width: 20px;
+}
+
+.sidebar .divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 1.5rem 0;
 }
 
 .logo-container {
