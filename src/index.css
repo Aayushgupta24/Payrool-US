@@ -1,9 +1,28 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-
+@import '@copilotkit/react-ui/styles.css';
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Add these styles to customize the Copilot popup */
+.copilot-popup {
+  --copilot-popup-background: white;
+  --copilot-popup-text: #374151;
+  --copilot-popup-button-background: #0D9488;
+  --copilot-popup-button-text: white;
+  --copilot-popup-button-hover: #0F766E;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+}
+
+.copilot-popup-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.copilot-popup-button:hover {
+  transform: scale(1.05);
 }

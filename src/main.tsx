@@ -1,6 +1,7 @@
   import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import CopilotProvider from './components/CopilotProvider';
 import App from './App';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
@@ -142,6 +143,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <CopilotProvider>
+      <RouterProvider router={router} />
+    </CopilotProvider>
   </React.StrictMode>
 );
