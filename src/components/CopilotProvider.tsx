@@ -11,7 +11,11 @@ const CopilotProvider: React.FC<CopilotProviderProps> = ({ children }) => {
   return (
     <CopilotKit 
       publicApiKey={import.meta.env.VITE_COPILOT_PUBLIC_API_KEY}
-      runtimeUrl={import.meta.env.VITE_COPILOT_RUNTIME_URL}
+      apiEndpoint="/api/copilot"
+      chatApiEndpoint="/api/copilot"
+      onError={(error) => {
+        console.error('Copilot error:', error);
+      }}
     >
       {children}
       <CopilotPopup 
@@ -28,6 +32,9 @@ const CopilotProvider: React.FC<CopilotProviderProps> = ({ children }) => {
 };
 
 export default CopilotProvider;
+
+
+
 
 
 
