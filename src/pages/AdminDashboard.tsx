@@ -20,13 +20,8 @@ const AdminDashboard: React.FC = () => {
         
         if (response?.data && Array.isArray(response.data)) {
           setCompanies(response.data);
-          
-          // Auto-select GrowthPods Demo if it exists
-          const growthPodsDemo = response.data.find(company => company.company === 'GrowthPods Demo');
-          if (growthPodsDemo) {
-            setSelectedCompany(growthPodsDemo.companyID);
-            handleCompanySelect(growthPodsDemo.companyID);
-          }
+          // Removed auto-selection of GrowthPods Demo
+          setSelectedCompany(''); // Ensure default selection is empty
         } else {
           console.error('Invalid data format received:', response);
           setCompanies([]);
@@ -42,14 +37,13 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchCompanies();
-  }, [navigate]); // Added navigate to dependencies
+  }, [navigate]);
 
   const handleCompanySelect = (companyId: string) => {
     setSelectedCompany(companyId);
     const selectedCompany = companies.find(company => company.companyID === companyId);
     
     if (selectedCompany?.company === 'GrowthPods Demo') {
-      // Store the selected company info in localStorage or state management if needed
       localStorage.setItem('selectedCompany', JSON.stringify(selectedCompany));
       navigate('/employer/dashboard');
     }

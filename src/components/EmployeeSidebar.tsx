@@ -43,7 +43,12 @@ const EmployeeSidebar: React.FC = () => {
             </div>
           ) : (
             <div className="w-8 h-8">
-              <img src="/growth-pods-logo.svg" alt="GP" className="w-full h-full" />
+              <img 
+                src="/logo1.png" 
+                alt="GrowthPods" 
+                className="w-full h-full"
+                style={{ filter: 'brightness(0) saturate(100%) hue-rotate(100deg) brightness(1.2)' }}
+              />
             </div>
           )}
         </div>

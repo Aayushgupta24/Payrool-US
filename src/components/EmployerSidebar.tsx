@@ -62,10 +62,18 @@ const EmployerSidebar: React.FC = () => {
         {/* Company Logo */}
         <div className={`px-4 py-6 ${isHovered ? 'px-6' : 'px-2'}`}>
           {isHovered ? (
-            <h2 className="text-lg font-semibold text-gray-900">GrowthPods Demo</h2>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">GrowthPods Demo</h2>
+              <div className="text-sm text-gray-500">Hire. Pay. Manage.</div>
+            </div>
           ) : (
             <div className="w-8 h-8">
-              <img src="/growth-pods-logo.svg" alt="GP" className="w-full h-full" />
+              <img 
+                src="/logo1.png" 
+                alt="GrowthPods" 
+                className="w-full h-full"
+                style={{ filter: 'brightness(1) saturate(100%)' }}
+              />
             </div>
           )}
         </div>
