@@ -20,6 +20,8 @@ const Sidebar: React.FC = () => {
   };
 
   const handleSignOut = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('selectedCompany');
     navigate('/');
   };
 
@@ -41,7 +43,11 @@ const Sidebar: React.FC = () => {
             </div>
           ) : (
             <div className="w-8 h-8">
+<<<<<<< HEAD
               <img src="/growth-pods.png" alt="GP" className="w-full h-full" />
+=======
+              <img src="/logo1.png" alt="GP" className="w-full h-full" />
+>>>>>>> d5d5514ab3798de981d54bfc4e6cc86006b711f3
             </div>
           )}
         </div>

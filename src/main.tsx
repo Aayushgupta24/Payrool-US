@@ -1,6 +1,6 @@
   import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import CopilotProvider from './components/CopilotProvider';
 import App from './App';
 import AdminDashboard from './pages/AdminDashboard';
@@ -28,11 +28,26 @@ import AddBusinessContractorPage from './pages/AddBusinessContractorPage';
 import BusinessDocuments from './pages/BusinessDocuments';
 import EmployerSettingsPage from './pages/EmployerSettingsPage';
 import EmployerHelpPage from './pages/EmployerHelpPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Navigate to="/login" />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/signup",
+    element: <SignupPage />,
   },
   // Admin routes
   {
