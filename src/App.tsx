@@ -6,13 +6,16 @@ export default function App() {
   return (
     <html lang="en">
       <body>
-        <CopilotKit publicApiKey="ck_pub_ec1e7bce3f8cfdd4b6afff6e4a7a6878">
+        <CopilotKit 
+          publicApiKey={import.meta.env.VITE_COPILOT_PUBLIC_API_KEY}
+          runtimeUrl="/api/copilot"
+        >
           <CopilotPopup
             labels={{
-              title: "Popup Assistant",
+              title: "GrowthPods Assistant",
               initial: "How can I help you today?"
             }}
-            instructions="AI help that shows up right when you need it"
+            instructions="I'm your GrowthPods AI assistant. How can I help you today?"
           />
         </CopilotKit>
       </body>

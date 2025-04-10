@@ -1,7 +1,7 @@
 import api from './apiConfig';
 
 export class CopilotService {
-  // User Operations
+  // Add this new method
   async getUsersByCompany() {
     try {
       const selectedCompanyStr = localStorage.getItem('selectedCompany');
@@ -10,92 +10,77 @@ export class CopilotService {
       }
 
       const selectedCompany = JSON.parse(selectedCompanyStr);
-      
       const response = await api.post('/reports', {
         method: 'getUsersByCompanyName',
         companyName: selectedCompany.company
       });
 
-      const data = response.data;
-      
-      if (data && typeof data === 'object') {
-        let usersData = [];
-        
-        if (Array.isArray(data)) {
-          usersData = data;
-        } else if (Array.isArray(data.users)) {
-          usersData = data.users;
-        } else if (data.data && Array.isArray(data.data.users)) {
-          usersData = data.data.users;
-        } else if (data.data && Array.isArray(data.data)) {
-          usersData = data.data;
-        }
-
-        return usersData;
-      }
-      throw new Error('Invalid response format');
-    } catch (error: any) {
+      return response.data;
+    } catch (error) {
       console.error('Error fetching users:', error);
       throw error;
     }
   }
 
-  // Employee Operations
-  async addEmployee(employeeData: any) {
-    try {
-      const selectedCompanyStr = localStorage.getItem('selectedCompany');
-      if (!selectedCompanyStr) throw new Error('No company selected');
-      
-      const selectedCompany = JSON.parse(selectedCompanyStr);
-      
-      const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
-        method: 'addUser',
-        user: {
-          companyId: selectedCompany.companyID,
-          userReferenceId: '',
-          ...employeeData,
-          companyLocationId: ''
-        }
-      });
+  // User Operations
+  async getUsers() {
+    const response = await api.get('/admin/users');
+    return response.data;
+  }
 
-      return response.data;
-    } catch (error) {
-      console.error('Error adding employee:', error);
-      throw error;
-    }
+  async getUserById(id: string) {
+    const response = await api.get(`/admin/users/${id}`);
+    return response.data;
+  }
+
+  async createUser(userData: any) {
+    const response = await api.post('/admin/users', userData);
+    return response.data;
+  }
+
+  async updateUser(id: string, userData: any) {
+    const response = await api.put(`/admin/users/${id}`, userData);
+    return response.data;
+  }
+
+  async deleteUser(id: string) {
+    const response = await api.delete(`/admin/users/${id}`);
+    return response.data;
+  }
+
+  // Employee Operations
+  async getEmployees() {
+    const response = await api.get('/api/employees');
+    return response.data;
+  }
+
+  async addEmployee(employeeData: any) {
+    const response = await api.post('/api/employees', employeeData);
+    return response.data;
+  }
+
+  async updateEmployee(id: string, employeeData: any) {
+    const response = await api.put(`/api/employees/${id}`, employeeData);
+    return response.data;
+  }
+
+  // Document Operations
+  async getDocuments() {
+    const response = await api.get('/api/documents');
+    return response.data;
   }
 
   // Payroll Operations
   async getPayroll() {
-    try {
-      const response = await employerService.getPayrollHistory();
-      return response.data;
-    } catch (error) {
-      console.error('Error getting payroll:', error);
-      throw error;
-    }
+    const response = await api.get('/api/payroll');
+    return response.data;
   }
 
   async runPayroll(payrollData: any) {
-    try {
-      const response = await employerService.runPayroll(payrollData);
-      return response.data;
-    } catch (error) {
-      console.error('Error running payroll:', error);
-      throw error;
-    }
-  }
-
-  // Helper method to get user count
-  async getUserCount() {
-    try {
-      const users = await this.getUsersByCompany();
-      return users.length;
-    } catch (error) {
-      console.error('Error getting user count:', error);
-      throw error;
-    }
+    const response = await api.post('/api/payroll/run', payrollData);
+    return response.data;
   }
 }
 
 export const copilotService = new CopilotService();
+

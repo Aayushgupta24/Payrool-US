@@ -1,5 +1,6 @@
 import { useCopilotContext } from '@copilotkit/react-core';
 import { useState, useCallback } from 'react';
+import { copilotService } from '../services/copilotService';
 
 export const useCopilot = () => {
   const { submitMessage } = useCopilotContext();
@@ -15,13 +16,18 @@ export const useCopilot = () => {
     setStreamingContent('');
 
     try {
-      // If question is about employee count, automatically set action
+      // Handle user count questions directly
       if (question.toLowerCase().includes('how many') && 
           (question.toLowerCase().includes('employee') || 
+           question.toLowerCase().includes('user') ||
            question.toLowerCase().includes('people'))) {
-        action = 'GET_USER_COUNT';
+        const users = await copilotService.getUsersByCompany();
+        return {
+          response: `Based on the current data, your company has ${users.length} users/employees.`
+        };
       }
 
+      // Handle other questions through normal flow
       const response = await submitMessage({
         message: question,
         context: {
@@ -50,5 +56,6 @@ export const useCopilot = () => {
     streamingContent 
   };
 };
+
 
 

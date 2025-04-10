@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
@@ -43,7 +44,7 @@ const EmployeeSidebar: React.FC = () => {
             </div>
           ) : (
             <div className="w-8 h-8">
-              <img src="/growth-pods-logo.svg" alt="GP" className="w-full h-full" />
+              <img src="/growth-pods.png" alt="GP" className="w-full h-full" />
             </div>
           )}
         </div>

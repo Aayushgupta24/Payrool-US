@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { FiUserPlus } from 'react-icons/fi';
 import api from '../services/apiConfig';
+import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 
 interface User {
   userID: string;
@@ -45,6 +46,135 @@ const UsersPage: React.FC = () => {
     jobTitle: '',
     companyLocationCategory: 'Remote',
     code: 'FL'
+  });
+  useCopilotReadable({
+    name: "users",
+    description: "List of all users in the current company",
+    value: users
+  });
+
+  useCopilotReadable({
+    name: "userStats",
+    description: "Statistics about users including total count and role distribution",
+    value: {
+      totalUsers: users.length,
+      activeUsers: users.filter(u => u.status === 'active').length,
+      roleDistribution: users.reduce((acc, user) => {
+        acc[user.role] = (acc[user.role] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    }
+  });
+
+  // Add User Action
+  useCopilotAction({
+    name: "addUser",
+    description: "Add a new user to the system",
+    parameters: [
+      { name: "firstName", type: "string", description: "User's first name" },
+      { name: "middleName", type: "string", description: "User's middle name (optional)" },
+      { name: "lastName", type: "string", description: "User's last name" },
+      { name: "email", type: "string", description: "User's email address" },
+      { name: "phoneNumber", type: "string", description: "User's phone number" },
+      { name: "dateOfJoin", type: "string", description: "User's join date (YYYY-MM-DD)" },
+      { name: "workerType", type: "string", description: "User's worker type (W2 or 1099)" },
+      { name: "jobTitle", type: "string", description: "User's job title" },
+      { name: "companyLocationCategory", type: "string", description: "Location category (Remote or On-site)" },
+      { name: "code", type: "string", description: "State code (e.g., FL, CA)" }
+    ],
+    run: async (params: AddUserFormData) => {
+      try {
+        const selectedCompanyStr = localStorage.getItem('selectedCompany');
+        if (!selectedCompanyStr) throw new Error('No company selected');
+        
+        const selectedCompany = JSON.parse(selectedCompanyStr);
+        
+        const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
+          method: 'addUser',
+          user: {
+            companyId: selectedCompany.companyID,
+            userReferenceId: '',
+            ...params,
+            companyLocationId: ''
+          }
+        });
+
+        await fetchUsers();
+
+        return `Successfully added user ${params.firstName} ${params.lastName}`;
+      } catch (error: any) {
+        console.error('Error in addUser action:', error);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
+        throw new Error(`Failed to add user: ${error.message}`);
+      }
+    }
+  });
+
+  // Add a Copilot readable for the form data
+  useCopilotReadable({
+    name: "addUserForm",
+    description: "Current state of the add user form",
+    value: formData
+  });
+
+  // Delete User Action
+  useCopilotAction({
+    name: "deactivateUser",
+    description: "Deactivate a user by email",
+    parameters: [
+      { name: "email", type: "string", description: "Email of the user to deactivate" }
+    ],
+    run: async (params) => {
+      try {
+        const user = users.find(u => u.email === params.email);
+        if (!user) return "User not found";
+
+        const selectedCompanyStr = localStorage.getItem('selectedCompany');
+        if (!selectedCompanyStr) throw new Error('No company selected');
+        
+        const selectedCompany = JSON.parse(selectedCompanyStr);
+
+        await api.post('https://sandbox.rollfi.xyz/adminPortal', {
+          method: 'deactivateUser',
+          user: {
+            companyId: selectedCompany.companyID,
+            email: params.email
+          }
+        });
+
+        await fetchUsers();
+        return `Successfully deactivated user ${params.email}`;
+      } catch (error: any) {
+        return `Failed to deactivate user: ${error.message}`;
+      }
+    }
+  });
+
+  // Search Users Action
+  useCopilotAction({
+    name: "searchUsers",
+    description: "Search users by name or email",
+    parameters: [
+      { name: "searchTerm", type: "string", description: "Name or email to search for" }
+    ],
+    run: async (params) => {
+      const searchResults = users.filter(user => 
+        user.email.toLowerCase().includes(params.searchTerm.toLowerCase()) ||
+        `${user.firstName} ${user.lastName}`.toLowerCase().includes(params.searchTerm.toLowerCase())
+      );
+      
+      if (searchResults.length === 0) {
+        return "No users found matching your search criteria";
+      }
+
+      return `Found ${searchResults.length} users:\n${searchResults.map(user => 
+        `- ${user.firstName} ${user.lastName} (${user.email})`
+      ).join('\n')}`;
+    }
   });
 
   const fetchUsers = async () => {

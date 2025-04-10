@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { FiRefreshCcw } from 'react-icons/fi';
 import { adminService, type AdminCompanyResponse } from '../services/adminService';
+import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -11,29 +12,79 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Define Copilot readable states
+  useCopilotReadable({
+    name: "companies",
+    description: "List of all companies in the system",
+    value: companies,
+  });
+
+  useCopilotReadable({
+    name: "selectedCompany",
+    description: "Currently selected company",
+    value: selectedCompany,
+  });
+
+  useCopilotReadable({
+    name: "dashboardStats",
+    description: "Dashboard statistics including total companies, active companies, and total employees",
+    value: {
+      totalCompanies: companies.length,
+      activeCompanies: companies.filter(c => c.status === 'active').length,
+      totalEmployees: companies.reduce((sum, company) => sum + (company.employeeCount || 0), 0),
+    },
+  });
+
+  // Define Copilot actions
+  useCopilotAction({
+    name: "selectCompany",
+    description: "Select a company by ID or name",
+    parameters: [{
+      name: "companyIdentifier",
+      type: "string",
+      description: "The company ID or name to select"
+    }],
+    run: async (params) => {
+      const company = companies.find(
+        c => c.companyID === params.companyIdentifier || c.company === params.companyIdentifier
+      );
+      if (company) {
+        handleCompanySelect(company.companyID);
+        return `Selected company: ${company.company}`;
+      }
+      return "Company not found";
+    },
+  });
+
+  useCopilotAction({
+    name: "switchToEmployee",
+    description: "Switch to employee dashboard view",
+    parameters: [],
+    run: async () => {
+      handleSwitchToEmployee();
+      return "Switched to employee dashboard";
+    },
+  });
+
   useEffect(() => {
     const fetchCompanies = async () => {
       setLoading(true);
       try {
         const response = await adminService.getAllCompanies();
-        console.log('API Response:', response);
         
         if (response?.data && Array.isArray(response.data)) {
           setCompanies(response.data);
           
-          // Auto-select GrowthPods Demo if it exists
           const growthPodsDemo = response.data.find(company => company.company === 'GrowthPods Demo');
           if (growthPodsDemo) {
             setSelectedCompany(growthPodsDemo.companyID);
             handleCompanySelect(growthPodsDemo.companyID);
           }
         } else {
-          console.error('Invalid data format received:', response);
-          setCompanies([]);
           setError('Invalid data format received from server');
+          setCompanies([]);
         }
       } catch (error: any) {
-        console.error('Failed to fetch companies:', error);
         setError(error.response?.data?.message || 'Failed to fetch companies');
         setCompanies([]);
       } finally {
@@ -42,14 +93,13 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchCompanies();
-  }, [navigate]); // Added navigate to dependencies
+  }, []);
 
   const handleCompanySelect = (companyId: string) => {
     setSelectedCompany(companyId);
     const selectedCompany = companies.find(company => company.companyID === companyId);
     
     if (selectedCompany?.company === 'GrowthPods Demo') {
-      // Store the selected company info in localStorage or state management if needed
       localStorage.setItem('selectedCompany', JSON.stringify(selectedCompany));
       navigate('/employer/dashboard');
     }
