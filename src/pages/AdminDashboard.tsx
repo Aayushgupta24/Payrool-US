@@ -74,17 +74,16 @@ const AdminDashboard: React.FC = () => {
         
         if (response?.data && Array.isArray(response.data)) {
           setCompanies(response.data);
-<<<<<<< HEAD
+
           
           const growthPodsDemo = response.data.find(company => company.company === 'GrowthPods Demo');
           if (growthPodsDemo) {
             setSelectedCompany(growthPodsDemo.companyID);
             handleCompanySelect(growthPodsDemo.companyID);
           }
-=======
           // Removed auto-selection of GrowthPods Demo
           setSelectedCompany(''); // Ensure default selection is empty
->>>>>>> d5d5514ab3798de981d54bfc4e6cc86006b711f3
+
         } else {
           setError('Invalid data format received from server');
           setCompanies([]);
@@ -98,11 +97,9 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchCompanies();
-<<<<<<< HEAD
+
   }, []);
-=======
-  }, [navigate]);
->>>>>>> d5d5514ab3798de981d54bfc4e6cc86006b711f3
+
 
   const handleCompanySelect = (companyId: string) => {
     setSelectedCompany(companyId);

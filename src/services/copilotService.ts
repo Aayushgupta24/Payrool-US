@@ -1,86 +1,80 @@
 import api from './apiConfig';
+import { employerService } from './employerService';
+import { adminService } from './adminService';
 
 export class CopilotService {
-  // Add this new method
-  async getUsersByCompany() {
+  async getFullContext() {
     try {
-      const selectedCompanyStr = localStorage.getItem('selectedCompany');
-      if (!selectedCompanyStr) {
-        throw new Error('No company selected');
+      const storedCompany = localStorage.getItem('selectedCompany');
+      const currentRoute = window.location.pathname;
+      
+      // Get all relevant data
+      const contextData = {
+        route: currentRoute,
+        company: storedCompany ? JSON.parse(storedCompany) : null,
+        userData: null,
+        employeeData: null,
+        dashboardStats: null,
+        companyList: []
+      };
+
+      // Based on route, fetch relevant data
+      if (currentRoute.includes('/admin')) {
+        const companies = await adminService.getAllCompanies();
+        contextData.companyList = companies.data || [];
       }
 
-      const selectedCompany = JSON.parse(selectedCompanyStr);
-      const response = await api.post('/reports', {
-        method: 'getUsersByCompanyName',
-        companyName: selectedCompany.company
-      });
+      if (contextData.company) {
+        const [employees, contractors, payroll, bank] = await Promise.all([
+          employerService.getAllEmployees(),
+          employerService.getAllContractors(),
+          employerService.getPayrollInfo(),
+          employerService.getBankBalance()
+        ]);
 
-      return response.data;
+        contextData.employeeData = {
+          employees: employees.data || [],
+          contractors: contractors.data || []
+        };
+
+        contextData.dashboardStats = {
+          payroll: payroll.data,
+          bankBalance: bank.data?.balance
+        };
+      }
+
+      return contextData;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error getting context:', error);
       throw error;
     }
   }
 
-  // User Operations
-  async getUsers() {
-    const response = await api.get('/admin/users');
-    return response.data;
+  async getUsersByCompany() {
+    const context = await this.getFullContext();
+    if (!context.employeeData) {
+      throw new Error('No employee data available');
+    }
+
+    return {
+      total: context.employeeData.employees.length + context.employeeData.contractors.length,
+      employees: context.employeeData.employees.length,
+      contractors: context.employeeData.contractors.length,
+      company: context.company?.company
+    };
   }
 
-  async getUserById(id: string) {
-    const response = await api.get(`/admin/users/${id}`);
-    return response.data;
+  async getDashboardStats() {
+    const context = await this.getFullContext();
+    return context.dashboardStats;
   }
 
-  async createUser(userData: any) {
-    const response = await api.post('/admin/users', userData);
-    return response.data;
-  }
-
-  async updateUser(id: string, userData: any) {
-    const response = await api.put(`/admin/users/${id}`, userData);
-    return response.data;
-  }
-
-  async deleteUser(id: string) {
-    const response = await api.delete(`/admin/users/${id}`);
-    return response.data;
-  }
-
-  // Employee Operations
-  async getEmployees() {
-    const response = await api.get('/api/employees');
-    return response.data;
-  }
-
-  async addEmployee(employeeData: any) {
-    const response = await api.post('/api/employees', employeeData);
-    return response.data;
-  }
-
-  async updateEmployee(id: string, employeeData: any) {
-    const response = await api.put(`/api/employees/${id}`, employeeData);
-    return response.data;
-  }
-
-  // Document Operations
-  async getDocuments() {
-    const response = await api.get('/api/documents');
-    return response.data;
-  }
-
-  // Payroll Operations
-  async getPayroll() {
-    const response = await api.get('/api/payroll');
-    return response.data;
-  }
-
-  async runPayroll(payrollData: any) {
-    const response = await api.post('/api/payroll/run', payrollData);
-    return response.data;
+  async getCompanyList() {
+    const context = await this.getFullContext();
+    return context.companyList;
   }
 }
 
 export const copilotService = new CopilotService();
+
 

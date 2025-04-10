@@ -84,31 +84,62 @@ const UsersPage: React.FC = () => {
     ],
     run: async (params: AddUserFormData) => {
       try {
+        // Validate required fields
+        if (!params.firstName || !params.lastName || !params.email) {
+          throw new Error('First name, last name, and email are required');
+        }
+
         const selectedCompanyStr = localStorage.getItem('selectedCompany');
         if (!selectedCompanyStr) throw new Error('No company selected');
         
         const selectedCompany = JSON.parse(selectedCompanyStr);
-        
-        const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
+
+        // Format phone number (remove non-numeric characters)
+        const formattedPhone = params.phoneNumber.replace(/\D/g, '');
+
+        // Format date to ensure YYYY-MM-DD
+        const formattedDate = new Date(params.dateOfJoin).toISOString().split('T')[0];
+
+        const payload = {
           method: 'addUser',
           user: {
             companyId: selectedCompany.companyID,
-            userReferenceId: '',
-            ...params,
-            companyLocationId: ''
+            userReferenceId: '', // Generated on backend
+            firstName: params.firstName.trim(),
+            middleName: params.middleName?.trim() || '',
+            lastName: params.lastName.trim(),
+            email: params.email.trim().toLowerCase(),
+            phoneNumber: formattedPhone,
+            dateOfJoin: formattedDate,
+            workerType: params.workerType || 'W2',
+            jobTitle: params.jobTitle.trim(),
+            companyLocationCategory: params.companyLocationCategory || 'Remote',
+            code: params.code || 'FL',
+            companyLocationId: '',
+            status: 'active',
+            company: selectedCompany.company // Add company name
           }
+        };
+
+        // First, try to add the user
+        const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', payload);
+        
+        if (!response.data || response.data.error) {
+          throw new Error(response.data?.error || 'Failed to add user');
+        }
+
+        // Then, update the admin service
+        await adminService.createAdminUser({
+          email: params.email.trim().toLowerCase(),
+          role: 'user'
         });
 
+        // Refresh the users list
         await fetchUsers();
 
-        return `Successfully added user ${params.firstName} ${params.lastName}`;
+        return `Successfully added user ${params.firstName} ${params.lastName} to ${selectedCompany.company}`;
       } catch (error: any) {
         console.error('Error in addUser action:', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
         throw new Error(`Failed to add user: ${error.message}`);
       }
     }
@@ -186,6 +217,7 @@ const UsersPage: React.FC = () => {
       }
 
       const selectedCompany = JSON.parse(selectedCompanyStr);
+      console.log('Fetching users for company:', selectedCompany);
       
       const response = await api.post('/reports', {
         method: 'getUsersByCompanyName',

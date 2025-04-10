@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddTeamMemberModal from '../components/AddTeamMemberModal';
 import api from '../services/apiConfig';
+import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core';
+import { employerService } from '../services/employerService';
 
 interface TeamMember {
   userID: string;
@@ -16,12 +18,38 @@ interface TeamMember {
   status?: string;
 }
 
+interface HiringFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfJoin: string;
+  workerType: 'W2' | '1099';
+  jobTitle: string;
+  companyLocationCategory: 'Remote' | 'On-site';
+  stateCode: string;
+  salary: number;
+}
+
 const HiringPage: React.FC = () => {
   const navigate = useNavigate();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [formData, setFormData] = useState<HiringFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    dateOfJoin: '',
+    workerType: 'W2',
+    jobTitle: '',
+    companyLocationCategory: 'Remote',
+    stateCode: '',
+    salary: 0
+  });
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -82,6 +110,109 @@ const HiringPage: React.FC = () => {
 
   const handleAddBusinessContractor = () => {
     navigate('/employer/hiring/add-business-contractor');
+  };
+
+  // Make form data readable by Copilot
+  useCopilotReadable({
+    name: "hiringFormData",
+    description: "Current state of the hiring form",
+    value: formData
+  });
+
+  // Add employee action for Copilot
+  useCopilotAction({
+    name: "addNewEmployee",
+    description: "Add a new employee to the system",
+    parameters: [
+      { name: "firstName", type: "string", description: "Employee's first name" },
+      { name: "lastName", type: "string", description: "Employee's last name" },
+      { name: "email", type: "string", description: "Employee's email address" },
+      { name: "phoneNumber", type: "string", description: "Employee's phone number" },
+      { name: "dateOfJoin", type: "string", description: "Start date (YYYY-MM-DD)" },
+      { name: "workerType", type: "string", description: "W2 or 1099" },
+      { name: "jobTitle", type: "string", description: "Employee's job title" },
+      { name: "companyLocationCategory", type: "string", description: "Remote or On-site" },
+      { name: "stateCode", type: "string", description: "Two-letter state code" },
+      { name: "salary", type: "number", description: "Annual salary amount" }
+    ],
+    run: async (params) => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Validate email format
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(params.email)) {
+          throw new Error('Invalid email format');
+        }
+
+        // Validate phone number (10 digits)
+        if (!/^\d{10}$/.test(params.phoneNumber.replace(/\D/g, ''))) {
+          throw new Error('Phone number must be 10 digits');
+        }
+
+        // Validate date format
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(params.dateOfJoin)) {
+          throw new Error('Date must be in YYYY-MM-DD format');
+        }
+
+        const response = await employerService.addEmployee({
+          ...params,
+          salary: Number(params.salary)
+        });
+
+        setSuccess(`Successfully added ${params.firstName} ${params.lastName} as ${params.jobTitle}`);
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          dateOfJoin: '',
+          workerType: 'W2',
+          jobTitle: '',
+          companyLocationCategory: 'Remote',
+          stateCode: '',
+          salary: 0
+        });
+
+        return `Successfully added employee: ${params.firstName} ${params.lastName}`;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to add employee';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    }
+  });
+
+  // Clear success message after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await employerService.addEmployee(formData);
+      setSuccess(`Successfully added ${formData.firstName} ${formData.lastName}`);
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        dateOfJoin: '',
+        workerType: 'W2',
+        jobTitle: '',
+        companyLocationCategory: 'Remote',
+        stateCode: '',
+        salary: 0
+      });
+    } catch (error) {
+      setError('Failed to add employee. Please try again.');
+    }
   };
 
   return (

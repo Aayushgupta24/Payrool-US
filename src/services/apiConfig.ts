@@ -9,12 +9,11 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Authorization': `Basic ${basicAuth}`,
-    'Connection': 'keep-alive'
+    'Authorization': `Basic ${basicAuth}`
+    // Removed the 'Connection' header
   },
-  timeout: 60000, // Increase timeout to 60 seconds
+  timeout: 60000, // 60 seconds
   validateStatus: (status) => status >= 200 && status < 500,
-  // Add retry configuration
   maxRetries: 3,
   retryDelay: 1000,
 });

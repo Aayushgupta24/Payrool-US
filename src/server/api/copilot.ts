@@ -8,195 +8,104 @@ if (!process.env.GROQ_API_KEY) {
 
 const groqClient = new GroqClient(process.env.GROQ_API_KEY);
 
-const systemPrompt: SystemPrompt = {
-  content: `You are a helpful assistant for the GrowthPods platform. When handling employee creation:
+const hiringSystemPrompt = `When handling employee creation:
 
-  1. When user asks to add an employee, first explain the required fields and then ask for them in a structured way:
-     Required fields:
-     - First Name
-     - Last Name
-     - Email
-     - Phone Number
-     - Date of Join
-     - Worker Type (W2 or 1099)
-     - Job Title
-     - Location Category (Remote or On-site)
-     - State Code (e.g., FL, CA)
+1. When user asks to add an employee, first explain the required fields and then ask for them in a structured way:
+   Required fields:
+   - First Name
+   - Last Name
+   - Email
+   - Phone Number
+   - Date of Join
+   - Worker Type (W2 or 1099)
+   - Job Title
+   - Location Category (Remote or On-site)
+   - State Code (e.g., FL, CA)
+   - Salary
 
-  2. After collecting information, confirm with the user and use CREATE_USER action.
+2. After collecting information, confirm with the user and use addNewEmployee action.
 
-  Example conversation flow:
-  User: "I want to add a new employee"
-  Assistant: "I'll help you add a new employee. I need some information:
-  1. What is the employee's first and last name?
-  (After user responds, continue with next field)
-  2. What is their email address?
-  (Continue until all required fields are collected)"
+Example conversation flow:
+User: "I want to add a new employee"
+Assistant: "I'll help you add a new employee. I need some information:
+1. What is the employee's first and last name?
+(After user responds, continue with next field)
+2. What is their email address?
+(Continue until all required fields are collected)"
 
-  3. For validation:
-  - Email should be in valid format
-  - Phone number should be 10 digits
-  - Date should be in YYYY-MM-DD format
-  - State code should be valid US state code
+3. For validation:
+- Email should be in valid format
+- Phone number should be 10 digits
+- Date should be in YYYY-MM-DD format
+- State code should be valid US state code
+- Salary should be a positive number
 
-  4. If any information is missing or invalid, ask for it specifically.`,
+4. If any information is missing or invalid, ask for it specifically.`;
+
+const systemPrompt = {
+  content: hiringSystemPrompt,
   role: 'system'
 };
 
-export async function POST(req: Request) {
-  console.log('🚀 Copilot API Request received:', {
-    method: req.method,
-    headers: Object.fromEntries(req.headers.entries()),
-    url: req.url
-  });
-
+export async function handler(req: Request) {
   try {
     const body = await req.json();
-    console.log('📥 Request body:', JSON.stringify(body, null, 2));
+    const { messages } = body;
+    const lastMessage = messages[messages.length - 1].content;
 
-    const { messages, action, actionData, stream = true } = body;
+    // Get full context for better responses
+    const context = await copilotService.getFullContext();
 
-    // Check message intent
-    const lastMessage = messages[messages.length - 1].content.toLowerCase();
-    console.log('🔍 Processing last message:', lastMessage);
-
-    let detectedAction = null;
-    let contextData = {};
-
-    // Detect count-related questions
-    if (lastMessage.includes('how many') && 
-        (lastMessage.includes('user') || lastMessage.includes('employee') || 
-         lastMessage.includes('people') || lastMessage.includes('staff'))) {
-      console.log('📊 Detected count query, fetching user count...');
-      try {
-        console.log('📡 Calling getUsersByCompany API...');
-        const users = await copilotService.getUsersByCompany();
-        console.log(`✅ Retrieved ${users.length} users`);
-        
-        contextData = { userCount: users.length };
-        console.log('📤 Sending count response');
-        return new Response(JSON.stringify({ 
-          response: `Based on the current data, your company has ${users.length} users/employees.`
-        }));
-      } catch (error) {
-        console.error('❌ Error fetching user count:', error);
-        return new Response(JSON.stringify({ 
-          response: "Failed to fetch user count. Please try again or contact support."
-        }));
-      }
-    }
-
-    // Detect create/update actions
-    if (lastMessage.includes('create') || lastMessage.includes('add') || 
-        lastMessage.includes('new')) {
-      detectedAction = 'CREATE_USER';
-      console.log('🆕 Detected create action');
-    } else if (lastMessage.includes('update') || lastMessage.includes('change') || 
-               lastMessage.includes('modify')) {
-      detectedAction = 'UPDATE_USER';
-      console.log('📝 Detected update action');
-    }
-
-    // If action detected, execute it
-    if (detectedAction) {
-      console.log(`🎯 Executing action: ${detectedAction}`, {
-        actionData: actionData
-      });
-      try {
-        const result = await executeAction(detectedAction, actionData);
-        console.log('✅ Action executed successfully:', result);
-        contextData = { actionResult: result };
-      } catch (error) {
-        console.error(`❌ Error executing ${detectedAction}:`, error);
-        return new Response(JSON.stringify({ 
-          response: `Failed to ${detectedAction.toLowerCase()}: ${error.message}`
-        }));
-      }
-    }
-
-    // Enhance the message processing to handle employee creation flow
-    if (lastMessage.includes('add') && 
-        (lastMessage.includes('employee') || lastMessage.includes('worker'))) {
-      
-      // If no actionData provided, start collection flow
-      if (!actionData) {
-        return new Response(JSON.stringify({
-          response: `I'll help you add a new employee. Please provide the following information:
-          1. Employee's first and last name
-          2. Email address
-          3. Phone number
-          4. Start date (YYYY-MM-DD)
-          5. Worker type (W2 or 1099)
-          6. Job title
-          7. Location (Remote or On-site)
-          8. State code
-
-          Please provide the employee's first and last name to begin.`
-        }));
-      }
-
-      // If actionData is partial, ask for missing fields
-      const missingFields = validateEmployeeData(actionData);
-      if (missingFields.length > 0) {
-        return new Response(JSON.stringify({
-          response: `Please provide the following missing information:
-          ${missingFields.join('\n')}`
-        }));
-      }
-
-      // If all data is present, proceed with creation
-      try {
-        const result = await copilotService.createUser(actionData);
-        return new Response(JSON.stringify({
-          response: `Successfully added employee ${actionData.firstName} ${actionData.lastName} as ${actionData.jobTitle}.`
-        }));
-      } catch (error) {
-        return new Response(JSON.stringify({
-          response: `Failed to add employee: ${error.message}`
-        }));
-      }
-    }
-
-    // Regular chat flow with context
-    const augmentedMessages = [
-      systemPrompt,
-      {
-        role: 'system',
-        content: `Current context:\n${JSON.stringify(contextData, null, 2)}`,
-      },
-      ...messages,
-    ];
-
-    console.log('📤 Sending request to Groq:', {
-      messageCount: augmentedMessages.length,
-      contextData: contextData,
-      streaming: stream
-    });
-
-    if (stream) {
-      console.log('🌊 Initiating streaming response');
-      const stream = await groqClient.createStreamingCompletion(augmentedMessages);
-      console.log('✅ Stream established');
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
-    } else {
-      console.log('📩 Requesting completion from Groq');
-      const completion = await groqClient.createCompletion(augmentedMessages);
-      console.log('✅ Received completion:', completion.choices[0].message);
+    // Handle different types of queries based on context
+    if (lastMessage.toLowerCase().includes('how many')) {
+      const counts = await copilotService.getUsersByCompany();
       return new Response(JSON.stringify({ 
-        response: completion.choices[0].message.content 
+        response: `Your company ${counts.company} currently has:
+- ${counts.employees} full-time employees
+- ${counts.contractors} contractors
+- ${counts.total} total team members`
       }));
     }
-  } catch (error) {
-    console.error('❌ Fatal error processing request:', error);
+
+    if (lastMessage.toLowerCase().includes('dashboard') || 
+        lastMessage.toLowerCase().includes('stats')) {
+      const stats = await copilotService.getDashboardStats();
+      return new Response(JSON.stringify({ 
+        response: `Current dashboard statistics:
+- Bank Balance: $${stats.bankBalance}
+- Next Payroll: $${stats.payroll.amount}
+- Next Payroll Date: ${stats.payroll.date}`
+      }));
+    }
+
+    if (lastMessage.toLowerCase().includes('companies')) {
+      const companies = await copilotService.getCompanyList();
+      return new Response(JSON.stringify({ 
+        response: `Available companies:
+${companies.map(c => `- ${c.company}`).join('\n')}`
+      }));
+    }
+
+    // Default response using Groq
+    const completion = await groqClient.createCompletion([
+      ...messages,
+      { role: 'system', content: `Current context:
+Route: ${context.route}
+Company: ${context.company?.company || 'None selected'}
+Employees: ${context.employeeData?.employees.length || 0}
+Contractors: ${context.employeeData?.contractors.length || 0}`
+      }
+    ]);
+
     return new Response(JSON.stringify({ 
-      error: 'Internal server error' 
-    }), { status: 500 });
+      response: completion.choices[0].message.content 
+    }));
+
+  } catch (error) {
+    console.error('Copilot error:', error);
+    return new Response(JSON.stringify({ 
+      response: "I encountered an error while processing your request. Please try again."
+    }));
   }
 }
 
@@ -317,10 +226,5 @@ function validateEmployeeData(data: any): string[] {
 
   return missingFields;
 }
-
-
-
-
-
 
 

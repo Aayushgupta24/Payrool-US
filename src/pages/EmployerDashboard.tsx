@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
+import { employerService } from '../services/employerService';
 import AddTeamMemberModal from '../components/AddTeamMemberModal';
 import { FiRefreshCcw } from 'react-icons/fi';
 
@@ -9,6 +11,46 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
   const navigate = useNavigate();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState({
+    bankBalance: 0,
+    nextPayroll: 0,
+    nextPayrollDate: '',
+    lastPayrollDate: '',
+    employeeCount: 0,
+    contractorCount: 0,
+  });
+
+  // Fetch dashboard data
+  const fetchDashboardData = async () => {
+    try {
+      const storedCompany = localStorage.getItem('selectedCompany');
+      if (!storedCompany) return;
+
+      const company = JSON.parse(storedCompany);
+      setCompanyInfo(company);
+
+      // Fetch bank balance
+      const balanceResponse = await employerService.getBankBalance();
+      
+      // Fetch next payroll
+      const payrollResponse = await employerService.getNextPayroll();
+      
+      // Fetch employee counts
+      const employeesResponse = await employerService.getAllEmployees();
+      const contractorsResponse = await employerService.getAllContractors();
+
+      setDashboardData({
+        bankBalance: balanceResponse?.data?.balance || 0,
+        nextPayroll: payrollResponse?.data?.amount || 0,
+        nextPayrollDate: payrollResponse?.data?.date || '',
+        lastPayrollDate: payrollResponse?.data?.lastPayrollDate || '',
+        employeeCount: employeesResponse?.data?.length || 0,
+        contractorCount: contractorsResponse?.data?.length || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
 
   useEffect(() => {
     const storedCompany = localStorage.getItem('selectedCompany');
@@ -16,6 +58,50 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
       setCompanyInfo(JSON.parse(storedCompany));
     }
   }, []);
+
+  // Copilot Readable States
+  useCopilotReadable({
+    name: "companyInfo",
+    description: "Current company information",
+    value: companyInfo,
+  });
+
+  useCopilotReadable({
+    id: "dashboardStats",
+    description: "Dashboard statistics including bank balance, payroll info, and employee counts",
+    value: dashboardData,
+  });
+
+  // Copilot Actions
+  useCopilotAction({
+    name: "refreshDashboard",
+    description: "Refresh all dashboard data",
+    parameters: [],
+    run: async () => {
+      await fetchDashboardData();
+      return "Dashboard data refreshed successfully";
+    },
+  });
+
+  useCopilotAction({
+    name: "initiatePayroll",
+    description: "Start a new payroll run",
+    parameters: [
+      {
+        name: "type",
+        type: "string",
+        description: "Type of payroll (employees or contractors)"
+      }
+    ],
+    run: async (params) => {
+      if (params.type === 'employees') {
+        handlePayEmployees();
+      } else if (params.type === 'contractors') {
+        handlePayContractors();
+      }
+      return `Initiated ${params.type} payroll`;
+    },
+  });
 
   const handlePayContractors = () => {
     navigate('/employer/payroll', { state: { activeTab: 'Pay Contractors' } });
