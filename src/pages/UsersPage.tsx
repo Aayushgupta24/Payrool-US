@@ -3,6 +3,10 @@ import Sidebar from '../components/Sidebar';
 import { FiUserPlus } from 'react-icons/fi';
 import api from '../services/apiConfig';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
+import { useNavigationStore } from '../store/navigationStore';
+import { adminService } from '../services/adminService';
+import axios from 'axios';
+import { getAccessToken } from '../utils/auth';
 
 interface User {
   userID: string;
@@ -31,6 +35,7 @@ interface AddUserFormData {
 }
 
 const UsersPage: React.FC = () => {
+  const { intent, setIntent } = useNavigationStore();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +52,21 @@ const UsersPage: React.FC = () => {
     companyLocationCategory: 'Remote',
     code: 'FL'
   });
+
+  useEffect(() => {
+    if (intent?.page === 'users') {
+      if (intent.action === 'openAddModal') {
+        setShowAddModal(true);
+      } else if (intent.action === 'prefillForm' && intent.payload) {
+        setFormData(intent.payload);
+        setShowAddModal(true);
+      } else if (intent.action === 'search' && intent.payload?.searchTerm) {
+        handleSearch(intent.payload.searchTerm);
+      }
+      setIntent(null);
+    }
+  }, [intent, setIntent]);
+
   useCopilotReadable({
     name: "users",
     description: "List of all users in the current company",
@@ -66,7 +86,7 @@ const UsersPage: React.FC = () => {
     }
   });
 
-  // Add User Action
+  // Add User Action with immediate update
   useCopilotAction({
     name: "addUser",
     description: "Add a new user to the system",
@@ -78,69 +98,63 @@ const UsersPage: React.FC = () => {
       { name: "phoneNumber", type: "string", description: "User's phone number" },
       { name: "dateOfJoin", type: "string", description: "User's join date (YYYY-MM-DD)" },
       { name: "workerType", type: "string", description: "User's worker type (W2 or 1099)" },
-      { name: "jobTitle", type: "string", description: "User's job title" },
-      { name: "companyLocationCategory", type: "string", description: "Location category (Remote or On-site)" },
-      { name: "code", type: "string", description: "State code (e.g., FL, CA)" }
+      { name: "jobTitle", type: "string", description: "User's job title" }
     ],
-    run: async (params: AddUserFormData) => {
+    handler: async (params: {
+      firstName: string;
+      middleName: string;
+      lastName: string;
+      email: string;
+      phoneNumber: string;
+      dateOfJoin: string;
+      workerType: string;
+      jobTitle: string;
+      companyLocationCategory: string;
+      code: string;
+    }) => {
       try {
-        // Validate required fields
-        if (!params.firstName || !params.lastName || !params.email) {
-          throw new Error('First name, last name, and email are required');
-        }
-
         const selectedCompanyStr = localStorage.getItem('selectedCompany');
         if (!selectedCompanyStr) throw new Error('No company selected');
-        
         const selectedCompany = JSON.parse(selectedCompanyStr);
 
-        // Format phone number (remove non-numeric characters)
         const formattedPhone = params.phoneNumber.replace(/\D/g, '');
-
-        // Format date to ensure YYYY-MM-DD
         const formattedDate = new Date(params.dateOfJoin).toISOString().split('T')[0];
 
-        const payload = {
-          method: 'addUser',
-          user: {
-            companyId: selectedCompany.companyID,
-            userReferenceId: '', // Generated on backend
-            firstName: params.firstName.trim(),
-            middleName: params.middleName?.trim() || '',
-            lastName: params.lastName.trim(),
-            email: params.email.trim().toLowerCase(),
-            phoneNumber: formattedPhone,
-            dateOfJoin: formattedDate,
-            workerType: params.workerType || 'W2',
-            jobTitle: params.jobTitle.trim(),
-            companyLocationCategory: params.companyLocationCategory || 'Remote',
-            code: params.code || 'FL',
-            companyLocationId: '',
-            status: 'active',
-            company: selectedCompany.company // Add company name
-          }
+        const newUser = {
+          companyId: selectedCompany.companyID,
+          userReferenceId: "",
+          firstName: params.firstName.trim(),
+          middleName: params.middleName?.trim() || "",
+          lastName: params.lastName.trim(),
+          email: params.email.trim().toLowerCase(),
+          phoneNumber: formattedPhone,
+          dateOfJoin: formattedDate,
+          workerType: params.workerType || "W2",
+          jobTitle: params.jobTitle.trim(),
+          companyLocationCategory: params.companyLocationCategory || "Remote",
+          code: params.code || "FL",
+          companyLocationId: ""
         };
 
-        // First, try to add the user
-        const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', payload);
-        
+        // Using api instance with built-in authorization
+        const response = await api.post(
+          'https://sandbox.rollfi.xyz/adminPortal',
+          {
+            method: "addUser",
+            user: newUser
+          }
+        );
+
         if (!response.data || response.data.error) {
-          throw new Error(response.data?.error || 'Failed to add user');
+          throw new Error(response.data?.error?.message || 'Failed to add user');
         }
 
-        // Then, update the admin service
-        await adminService.createAdminUser({
-          email: params.email.trim().toLowerCase(),
-          role: 'user'
-        });
-
-        // Refresh the users list
         await fetchUsers();
-
-        return `Successfully added user ${params.firstName} ${params.lastName} to ${selectedCompany.company}`;
+        return `Successfully added user ${newUser.firstName} ${newUser.lastName}`;
       } catch (error: any) {
         console.error('Error in addUser action:', error);
-        throw new Error(`Failed to add user: ${error.message}`);
+        const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
+        throw new Error(`Failed to add user: ${errorMessage}`);
       }
     }
   });
@@ -151,36 +165,52 @@ const UsersPage: React.FC = () => {
     description: "Current state of the add user form",
     value: formData
   });
-
+  useCopilotAction({
+    name: 'switchDashboard',
+    description: 'Switch to the dashboard view.',
+    parameters: [],
+    handler: async () => {
+      window.location.href = '/employer/dashboard';
+    },
+  });
   // Delete User Action
   useCopilotAction({
     name: "deactivateUser",
     description: "Deactivate a user by email",
     parameters: [
-      { name: "email", type: "string", description: "Email of the user to deactivate" }
+      { name: "email", type: "string", description: "Email of the user to deactivate" },
+      { name: "exitDate", type: "string", description: "User's exit date (YYYY-MM-DD)" },
+      { name: "personalEmail", type: "string", description: "User's personal email" },
+      { name: "finalPayCheckType", type: "string", description: "Final payment status" },
+      { name: "additionalNotes", type: "string", description: "Additional notes for deactivation", optional: true }
     ],
-    run: async (params) => {
+    handler: async (params) => {
       try {
         const user = users.find(u => u.email === params.email);
         if (!user) return "User not found";
 
-        const selectedCompanyStr = localStorage.getItem('selectedCompany');
-        if (!selectedCompanyStr) throw new Error('No company selected');
-        
-        const selectedCompany = JSON.parse(selectedCompanyStr);
-
-        await api.post('https://sandbox.rollfi.xyz/adminPortal', {
+        // Using api instance with built-in authorization
+        const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
           method: 'deactivateUser',
           user: {
-            companyId: selectedCompany.companyID,
-            email: params.email
+            userId: user.userID,
+            exitDate: params.exitDate || new Date().toISOString().split('T')[0],
+            personalEmail: params.personalEmail || params.email,
+            finalPayCheckType: params.finalPayCheckType || "They have already been paid",
+            additionalNotes: params.additionalNotes || "User deactivated via system"
           }
         });
+
+        if (!response.data || response.data.error) {
+          throw new Error(response.data?.error?.message || 'Failed to deactivate user');
+        }
 
         await fetchUsers();
         return `Successfully deactivated user ${params.email}`;
       } catch (error: any) {
-        return `Failed to deactivate user: ${error.message}`;
+        console.error('Error in deactivateUser action:', error);
+        const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
+        throw new Error(`Failed to deactivate user: ${errorMessage}`);
       }
     }
   });
@@ -262,6 +292,15 @@ const UsersPage: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
+  }, []);
+
+  // Refresh users periodically (every 30 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUsers();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const formatDate = (dateString: string) => {

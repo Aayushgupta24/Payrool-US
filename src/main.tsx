@@ -1,4 +1,4 @@
-  import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import CopilotProvider from './components/CopilotProvider';

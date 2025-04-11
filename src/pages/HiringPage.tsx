@@ -4,6 +4,7 @@ import AddTeamMemberModal from '../components/AddTeamMemberModal';
 import api from '../services/apiConfig';
 import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core';
 import { employerService } from '../services/employerService';
+import { useNavigationStore } from '../store/navigationStore';
 
 interface TeamMember {
   userID: string;
@@ -50,6 +51,18 @@ const HiringPage: React.FC = () => {
     stateCode: '',
     salary: 0
   });
+
+  const { intent, setIntent } = useNavigationStore();
+
+  useEffect(() => {
+    if (intent?.page === 'hiring') {
+      if (intent.action === 'prefillForm' && intent.payload) {
+        setFormData(intent.payload);
+        // Additional logic to handle form initialization
+      }
+      setIntent(null);
+    }
+  }, [intent, setIntent]);
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
