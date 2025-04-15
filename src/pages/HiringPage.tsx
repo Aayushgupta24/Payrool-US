@@ -34,7 +34,6 @@ interface HiringFormData {
 
 const HiringPage: React.FC = () => {
   useSmartNavigation();
-  const { intent, setIntent } = useNavigationStore();
   const navigate = useNavigate();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -53,16 +52,6 @@ const HiringPage: React.FC = () => {
     stateCode: '',
     salary: 0
   });
-
-  useEffect(() => {
-    if (intent?.page === 'hiring') {
-      if (intent.action === 'prefillForm' && intent.payload) {
-        setFormData(intent.payload);
-        // Additional logic to handle form initialization
-      }
-      setIntent(null);
-    }
-  }, [intent, setIntent]);
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
