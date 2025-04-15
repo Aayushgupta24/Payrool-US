@@ -4,8 +4,10 @@ import Sidebar from '../components/Sidebar';
 import { FiRefreshCcw } from 'react-icons/fi';
 import { adminService, type AdminCompanyResponse } from '../services/adminService';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 const AdminDashboard: React.FC = () => {
+  useSmartNavigation(); // Add this hook to enable smart navigation
   const navigate = useNavigate();
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [companies, setCompanies] = useState<AdminCompanyResponse[]>([]);

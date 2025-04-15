@@ -1,7 +1,9 @@
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 const DocumentsPage: React.FC = () => {
+  useSmartNavigation();
   const navigate = useNavigate();
   const location = useLocation();
 

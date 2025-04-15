@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -14,6 +15,15 @@ export default function LoginPage() {
   const location = useLocation();
   const { signInWithOTP, verifyOTP } = useAuth();
   const { toast, showToast, hideToast } = useToast();
+=======
+import React, { useState } from "react";
+import { Link } from 'react-router-dom';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
+
+const LoginPage: React.FC = () => {
+  useSmartNavigation();
+  const [showPassword, setShowPassword] = useState(false);
+>>>>>>> 15fa9e51f2cc7defcea1d404f2fc0f270c97a771
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

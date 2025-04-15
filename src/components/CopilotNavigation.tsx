@@ -20,13 +20,13 @@ export const CopilotNavigation: React.FC = () => {
       switch (view) {
         case 'employer':
           navigate('/employer/dashboard');
-          return "Switched to employer dashboard";
+          return 'Switched to employer dashboard';
         case 'employee':
           navigate('/employee/dashboard');
-          return "Switched to employee dashboard";
+          return 'Switched to employee dashboard';
         case 'admin':
-          navigate('/admin/dashboard');
-          return "Switched to admin dashboard";
+          navigate('/admin');
+          return 'Switched to admin dashboard';
         default:
           return "Invalid view type. Please specify employer, employee, or admin.";
       }

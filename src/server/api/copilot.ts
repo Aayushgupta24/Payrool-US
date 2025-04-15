@@ -14,33 +14,33 @@ const hiringSystemPrompt = `When handling employee creation:
    Required fields:
    - First Name
    - Last Name
-   - Email
-   - Phone Number
-   - Date of Join
+   - Email (must be valid email format)
+   - Phone Number (must be exactly 10 digits)
+   - Date of Join (must be YYYY-MM-DD format)
    - Worker Type (W2 or 1099)
    - Job Title
    - Location Category (Remote or On-site)
    - State Code (e.g., FL, CA)
-   - Salary
 
-2. After collecting information, confirm with the user and use addNewEmployee action.
+2. After collecting information, validate ALL fields before attempting to add the user:
+   - Phone number must be exactly 10 digits
+   - Email must be in valid format
+   - Date must be in YYYY-MM-DD format
+   - All required fields must be present
 
-Example conversation flow:
-User: "I want to add a new employee"
-Assistant: "I'll help you add a new employee. I need some information:
-1. What is the employee's first and last name?
-(After user responds, continue with next field)
-2. What is their email address?
-(Continue until all required fields are collected)"
+3. If validation fails:
+   - Clearly explain which fields are invalid
+   - Ask the user to provide the correct information
+   - Do NOT proceed with user creation until all validations pass
 
-3. For validation:
-- Email should be in valid format
-- Phone number should be 10 digits
-- Date should be in YYYY-MM-DD format
-- State code should be valid US state code
-- Salary should be a positive number
+4. Only report success if the user was actually added to the system
+   - Wait for confirmation from the system
+   - Check for error responses
+   - Report any errors back to the user
 
-4. If any information is missing or invalid, ask for it specifically.`;
+Example error handling:
+User: "Add John Doe with phone 123"
+Assistant: "❌ Error: Please provide a valid 10-digit phone number for John Doe. The current number '123' is invalid."`;
 
 const systemPrompt = {
   content: hiringSystemPrompt,
@@ -56,46 +56,52 @@ export async function handler(req: Request) {
     // Get full context for better responses
     const context = await copilotService.getFullContext();
 
-    // Handle different types of queries based on context
-    if (lastMessage.toLowerCase().includes('how many')) {
-      const counts = await copilotService.getUsersByCompany();
-      return new Response(JSON.stringify({ 
-        response: `Your company ${counts.company} currently has:
-- ${counts.employees} full-time employees
-- ${counts.contractors} contractors
-- ${counts.total} total team members`
-      }));
+    // Validate data before processing
+    if (lastMessage.toLowerCase().includes('add') && lastMessage.toLowerCase().includes('employee')) {
+      // Extract phone number using regex
+      const phoneMatch = lastMessage.match(/\b\d{10}\b|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/);
+      const phoneNumber = phoneMatch ? phoneMatch[0].replace(/[-\.]/g, '') : '';
+
+      if (!phoneNumber || phoneNumber.length !== 10) {
+        return new Response(JSON.stringify({ 
+          response: "⚠️ Error: Please provide a valid 10-digit phone number. For example: 1234567890"
+        }));
+      }
+
+      // Validate email
+      const emailMatch = lastMessage.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (!emailMatch) {
+        return new Response(JSON.stringify({ 
+          response: "⚠️ Error: Please provide a valid email address. For example: name@company.com"
+        }));
+      }
+
+      // Continue with the rest of the validation from validateEmployeeData
+      const data = extractEmployeeData(lastMessage);
+      const missingFields = validateEmployeeData(data);
+      
+      if (missingFields.length > 0) {
+        return new Response(JSON.stringify({ 
+          response: `⚠️ Error: The following information is missing or invalid:\n${missingFields.join('\n')}\n\nPlease provide all required information.`
+        }));
+      }
     }
 
-    if (lastMessage.toLowerCase().includes('dashboard') || 
-        lastMessage.toLowerCase().includes('stats')) {
-      const stats = await copilotService.getDashboardStats();
-      return new Response(JSON.stringify({ 
-        response: `Current dashboard statistics:
-- Bank Balance: $${stats.bankBalance}
-- Next Payroll: $${stats.payroll.amount}
-- Next Payroll Date: ${stats.payroll.date}`
-      }));
-    }
-
-    if (lastMessage.toLowerCase().includes('companies')) {
-      const companies = await copilotService.getCompanyList();
-      return new Response(JSON.stringify({ 
-        response: `Available companies:
-${companies.map(c => `- ${c.company}`).join('\n')}`
-      }));
-    }
-
-    // Default response using Groq
-    const completion = await groqClient.createCompletion([
-      ...messages,
-      { role: 'system', content: `Current context:
+    // Default response using OpenAI
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        ...messages,
+        { role: 'system', content: `Current context:
 Route: ${context.route}
 Company: ${context.company?.company || 'None selected'}
 Employees: ${context.employeeData?.employees.length || 0}
-Contractors: ${context.employeeData?.contractors.length || 0}`
-      }
-    ]);
+Contractors: ${context.employeeData?.contractors.length || 0}
+
+Please handle any errors gracefully and provide clear error messages to the user.`
+        }
+      ]
+    });
 
     return new Response(JSON.stringify({ 
       response: completion.choices[0].message.content 
@@ -103,8 +109,9 @@ Contractors: ${context.employeeData?.contractors.length || 0}`
 
   } catch (error) {
     console.error('Copilot error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return new Response(JSON.stringify({ 
-      response: "I encountered an error while processing your request. Please try again."
+      response: `⚠️ Error: ${errorMessage}\n\nPlease try again with valid information.`
     }));
   }
 }
