@@ -1,15 +1,17 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
-  // Debug log (remove after confirming)
-  console.log('GROQ API Key length:', env.GROQ_API_KEY?.length || 0);
-  console.log('GROQ API Key prefix:', env.GROQ_API_KEY?.substring(0, 4) || 'not found');
-
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src')
+      }
+    },
     server: {
       host: '127.0.0.1',
       port: 5173,

@@ -1,100 +1,179 @@
-import React, { useState } from "react";
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../hooks/useToast';
+import Toast from '../components/Toast';
+import { Shield } from 'lucide-react';
 
-const LoginPage: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [otpToken, setOtpToken] = useState(['', '', '', '', '', '']); // 6-digit OTP
+  const [isLoading, setIsLoading] = useState(false);
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { signInWithOTP, verifyOTP } = useAuth();
+  const { toast, showToast, hideToast } = useToast();
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (!showOTPInput) {
+        await signInWithOTP(email);
+        setShowOTPInput(true);
+        showToast({
+          type: 'success',
+          message: 'Check your email for the OTP code!'
+        });
+      } else {
+        const otpString = otpToken.join('');
+        const user = await verifyOTP(email, otpString);
+        
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        // Get the redirect path from location state or default to role-based path
+        const from = location.state?.from?.pathname || getRoleBasedPath(user.role);
+        navigate(from, { replace: true });
+      }
+    } catch (error) {
+      showToast({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Authentication failed'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to determine the redirect path based on user role
+  const getRoleBasedPath = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return '/admin';
+      case 'employer':
+        return '/employer/dashboard';
+      case 'employee':
+        return '/employee/dashboard';
+      default:
+        return '/login';
+    }
+  };
+
+  const handleOTPChange = (index: number, value: string) => {
+    if (value.length > 1) value = value.slice(-1); // Take only the last character if pasted
+    if (!/^\d*$/.test(value)) return; // Only allow digits
+
+    const newOTP = [...otpToken];
+    newOTP[index] = value;
+    setOtpToken(newOTP);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`otp-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otpToken[index] && index > 0) {
+      // Focus previous input on backspace if current input is empty
+      const prevInput = document.getElementById(`otp-${index - 1}`);
+      prevInput?.focus();
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
-      <div className="mb-6 flex flex-col items-center">
-        <img src="/main.png" alt="Growth Pods Logo" className="h-20 mb-2" />
-        <p className="text-center text-sm text-gray-700">Hire. Pay. Manage.</p>
-      </div>
-
-      <div className="w-full max-w-md bg-white">
-        <h2 className="text-3xl font-bold text-center mb-8">Welcome</h2>
-
-        <form className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="Enter email"
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-            />
+    <div className="min-h-screen flex bg-[#F4F9FF]">
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div className="flex items-center gap-2 mb-8">
+            <Shield className="h-8 w-8 text-[#32CD32]" />
+            <h1 className="text-2xl font-bold text-gray-900">Global SuperApp</h1>
           </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter password"
-                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-400 cursor-pointer"
-              >
-                {showPassword ? (
-                  // Eye icon when password is visible
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                ) : (
-                  // Eye-slash icon when password is hidden
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                  </svg>
-                )}
-              </button>
+          
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-extrabold text-gray-900">Sign in</h2>
+              <p className="mt-2 text-lg text-gray-600">Access your account</p>
             </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {!showOTPInput ? (
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#32CD32] focus:ring-[#32CD32]"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Enter 6-digit OTP
+                  </label>
+                  <div className="flex gap-2 justify-between">
+                    {otpToken.map((digit, index) => (
+                      <input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOTPChange(index, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        className="w-12 h-12 text-center text-xl rounded-md border-gray-300 shadow-sm focus:border-[#32CD32] focus:ring-[#32CD32]"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoading || (showOTPInput && otpToken.join('').length !== 6)}
+                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#32CD32] hover:bg-[#2AB12A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#32CD32] disabled:opacity-50 transition-colors"
+              >
+                {isLoading 
+                  ? 'Processing...' 
+                  : showOTPInput
+                  ? 'Verify OTP'
+                  : 'Sign in'
+                }
+              </button>
+
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <Link to="/forgot-password" className="text-[#32CD32] hover:text-[#2AB12A] font-medium">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="text-sm">
+                  <Link to="/signup" className="text-[#32CD32] hover:text-[#2AB12A] font-medium">
+                    Create account
+                  </Link>
+                </div>
+              </div>
+            </form>
           </div>
-
-          <div className="text-right">
-            <Link 
-              to="/forgot-password" 
-              className="text-sm text-gray-600 hover:text-teal-600 transition duration-200"
-            >
-              Forgot password
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-teal-700 text-white font-semibold rounded-md shadow hover:bg-teal-800"
-          >
-            Sign in
-          </button>
-
-          <p className="text-center text-sm text-gray-700 mt-6">
-            Don't have an account?{' '}
-            <Link 
-              to="/signup" 
-              className="text-teal-600 hover:text-teal-700 font-medium"
-            >
-              Sign up
-            </Link>
-          </p>
-        </form>
+        </div>
       </div>
+      
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
-};
-
-export default LoginPage;
-
-
-
+}

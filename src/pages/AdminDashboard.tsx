@@ -115,6 +115,10 @@ const AdminDashboard: React.FC = () => {
     navigate('/employee/dashboard');
   };
 
+  const handleSwitchToEmployer = () => {
+    navigate('/employer/dashboard');
+  };
+
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar />
@@ -130,8 +134,12 @@ const AdminDashboard: React.FC = () => {
               <FiRefreshCcw className="mr-2" />
               Switch to Employee
             </button>
-            <button className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">
-              Add New Company
+            <button
+              onClick={handleSwitchToEmployer}
+              className="flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              <FiRefreshCcw className="mr-2" />
+              Switch to Employer
             </button>
           </div>
         </div>

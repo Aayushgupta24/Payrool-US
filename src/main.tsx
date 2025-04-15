@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
+import { 
+  RouterProvider, 
+  createBrowserRouter, 
+  Navigate,
+  Routes,
+  Route
+} from 'react-router-dom';
 import CopilotProvider from './components/CopilotProvider';
 import App from './App';
 import AdminDashboard from './pages/AdminDashboard';
@@ -31,8 +37,10 @@ import EmployerHelpPage from './pages/EmployerHelpPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const router = createBrowserRouter([
+  // Public routes (unprotected)
   {
     path: "/",
     element: <Navigate to="/login" />,
@@ -42,26 +50,40 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: "/forgot-password",
-    element: <ForgotPasswordPage />,
-  },
-  {
     path: "/signup",
     element: <SignupPage />,
   },
-  // Admin routes
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+
+  // Protected Admin routes
   {
     path: "/admin",
-    element: <AdminDashboard />,
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin/users",
-    element: <UsersPage />,
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <UsersPage />
+      </ProtectedRoute>
+    ),
   },
-  // Employee routes with shared layout
+
+  // Protected Employee routes - Allow admin access
   {
-    path: "/employee",
-    element: <EmployeeLayout />,
+    path: "/employee/*",
+    element: (
+      <ProtectedRoute>
+        <EmployeeLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "dashboard",
@@ -95,10 +117,15 @@ const router = createBrowserRouter([
       },
     ]
   },
-  // Employer routes with shared layout
+
+  // Protected Employer routes - Allow admin access
   {
-    path: "/employer",
-    element: <EmployerLayout />,
+    path: "/employer/*",
+    element: (
+      <ProtectedRoute>
+        <EmployerLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "dashboard",
@@ -153,6 +180,12 @@ const router = createBrowserRouter([
         element: <EmployerHelpPage />,
       }
     ]
+  },
+
+  // Catch-all route for non-existent pages
+  {
+    path: "*",
+    element: <Navigate to="/login" replace />,
   }
 ]);
 
