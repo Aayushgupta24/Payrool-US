@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 interface Paystub {
   id: string;
@@ -9,6 +10,7 @@ interface Paystub {
 }
 
 const PaystubsPage: React.FC = () => {
+  useSmartNavigation();
   // Mock data - replace with actual API call
   const paystubs: Paystub[] = [
     {

@@ -1,14 +1,17 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import EmployeeSidebar from '../components/EmployeeSidebar';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 const EmployeeLayout: React.FC = () => {
+  useSmartNavigation();
+  
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <EmployeeSidebar />
-      <main className="flex-1">
+      <div className="flex-1">
         <Outlet />
-      </main>
+      </div>
     </div>
   );
 };

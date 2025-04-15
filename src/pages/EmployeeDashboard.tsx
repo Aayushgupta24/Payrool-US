@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiRefreshCcw } from 'react-icons/fi';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 interface Employee {
   id: string;
@@ -52,6 +53,7 @@ const mockEmployees: Employee[] = [
 ];
 
 const EmployeeDashboard: React.FC = () => {
+  useSmartNavigation(); // Add smart navigation
   const navigate = useNavigate();
   const [selectedEmployee, setSelectedEmployee] = useState('1');
   const employee = mockEmployees.find(emp => emp.id === selectedEmployee);

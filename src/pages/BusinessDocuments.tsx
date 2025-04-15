@@ -1,7 +1,9 @@
 import React from 'react';
 import DocumentTable from '../components/DocumentTable';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 const BusinessDocuments: React.FC = () => {
+  useSmartNavigation();
   // Example data - replace with actual data from your backend
   const businessDocuments = [
     {
