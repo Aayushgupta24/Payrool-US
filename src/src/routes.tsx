@@ -1,8 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import CopilotProvider from './components/CopilotProvider';
-import App from './App';
+import { CopilotNavigation } from './components/CopilotNavigation';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
@@ -21,7 +19,6 @@ import CompanyPage from './pages/CompanyPage';
 import EmployerDocumentsPage from './pages/EmployerDocumentsPage';
 import BenefitsPage from './pages/BenefitsPage';
 import TaxesPage from './pages/TaxesPage';
-import './index.css';
 import AddEmployeePage from './pages/AddEmployeePage';
 import AddIndependentContractorPage from './pages/AddIndependentContractorPage';
 import AddBusinessContractorPage from './pages/AddBusinessContractorPage';
@@ -32,10 +29,15 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/login" />,
+    element: (
+      <CopilotProvider>
+        <CopilotNavigation />
+        <Navigate to="/login" />
+      </CopilotProvider>
+    ),
   },
   {
     path: "/login",
@@ -155,11 +157,3 @@ const router = createBrowserRouter([
     ]
   }
 ]);
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <CopilotProvider>
-      <RouterProvider router={router} />
-    </CopilotProvider>
-  </React.StrictMode>
-);
