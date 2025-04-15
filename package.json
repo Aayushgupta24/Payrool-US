@@ -9,15 +9,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
+    "@copilotkit/react-core": "^1.8.4",
+    "@copilotkit/react-ui": "^1.8.4",
+    "@copilotkit/runtime": "^1.8.4",
+    "@supabase/supabase-js": "^2.39.7",
+=======
     "@copilotkit/react-core": "^1.8.5",
     "@copilotkit/react-textarea": "^1.8.5",
     "@copilotkit/react-ui": "^1.8.5",
     "@copilotkit/runtime": "^1.8.5",
+>>>>>>> 15fa9e51f2cc7defcea1d404f2fc0f270c97a771
     "@types/node": "^22.14.0",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
     "fuse.js": "^7.1.0",
     "groq-sdk": "^0.19.0",
+    "lucide-react": "^0.488.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
