@@ -4,7 +4,7 @@ import AddTeamMemberModal from '../components/AddTeamMemberModal';
 import api from '../services/apiConfig';
 import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core';
 import { employerService } from '../services/employerService';
-import { useNavigationStore } from '../store/navigationStore';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 interface TeamMember {
   userID: string;
@@ -33,6 +33,8 @@ interface HiringFormData {
 }
 
 const HiringPage: React.FC = () => {
+  useSmartNavigation();
+  const { intent, setIntent } = useNavigationStore();
   const navigate = useNavigate();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -51,8 +53,6 @@ const HiringPage: React.FC = () => {
     stateCode: '',
     salary: 0
   });
-
-  const { intent, setIntent } = useNavigationStore();
 
   useEffect(() => {
     if (intent?.page === 'hiring') {

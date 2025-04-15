@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 const LoginPage: React.FC = () => {
+  useSmartNavigation();
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {

@@ -4,10 +4,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
-  // Debug log (remove after confirming)
-  console.log('GROQ API Key length:', env.GROQ_API_KEY?.length || 0);
-  console.log('GROQ API Key prefix:', env.GROQ_API_KEY?.substring(0, 4) || 'not found');
-
   return {
     plugins: [react()],
     server: {
@@ -53,7 +49,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     define: {
-      'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY)
+      'process.env.OPENAI_API_KEY': JSON.stringify(env.OPENAI_API_KEY)
     }
   };
 });

@@ -7,6 +7,7 @@ import { useNavigationStore } from '../store/navigationStore';
 import { adminService } from '../services/adminService';
 import axios from 'axios';
 import { getAccessToken } from '../utils/auth';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 interface User {
   userID: string;
@@ -35,6 +36,7 @@ interface AddUserFormData {
 }
 
 const UsersPage: React.FC = () => {
+  useSmartNavigation(); // Add this hook to enable smart navigation
   const { intent, setIntent } = useNavigationStore();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
