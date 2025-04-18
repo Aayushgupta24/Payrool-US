@@ -21,3 +21,89 @@
 .copilot-popup-button:hover {
   transform: scale(1.05);
 }
+
+/* Add these styles after your existing CSS */
+@keyframes button-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(13, 148, 136, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(13, 148, 136, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(13, 148, 136, 0.2);
+  }
+}
+
+.group:hover {
+  animation: button-glow 2s infinite;
+}
+
+.group:active {
+  transform: translateY(2px);
+}
+
+/* Add smooth transitions for all interactive elements */
+button, a {
+  transition: all 0.3s ease;
+}
+
+/* Add a subtle pulse effect on hover */
+@keyframes subtle-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.group:hover {
+  animation: subtle-pulse 2s infinite;
+}
+
+/* Add these styles for form enhancements */
+.form-container {
+  transition: all 0.3s ease;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"] {
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus {
+  transform: translateY(-2px);
+}
+
+.shadow-hover {
+  transition: all 0.3s ease;
+}
+
+.shadow-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Add subtle animation for form sections */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-gray-50 {
+  animation: fadeIn 0.5s ease-out forwards;
+}

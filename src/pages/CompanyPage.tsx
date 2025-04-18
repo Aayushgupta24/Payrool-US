@@ -628,161 +628,167 @@ const CompanyPage: React.FC = () => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-xl w-full mx-4">
         <h2 className="text-2xl font-semibold mb-6">Add a business address</h2>
-        <form onSubmit={handleSaveLocation} className="space-y-4">
+        <form onSubmit={handleSaveLocation} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location name
+              Company location <span className="text-red-500">*</span>
             </label>
             <select
               name="locationName"
               value={locationFormData.locationName}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             >
               <option value="">Select Location name</option>
-              <option value="branch">Branch</option>
-              <option value="headquarters">Headquarters</option>
+              <option value="Branch">Branch</option>
+              <option value="Headquarters">Headquarters</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location phone number
+              Location phone number <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="phoneNumber"
-              placeholder="Optional"
               value={locationFormData.phoneNumber}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address 1
+              Address 1 <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="address1"
-              placeholder="Enter address 1"
               value={locationFormData.address1}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address 2
+              Address 2 <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="address2"
-              placeholder="Enter address 2"
               value={locationFormData.address2}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              City
+              City <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="city"
-              placeholder="Enter city"
               value={locationFormData.city}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              State
+              State <span className="text-red-500">*</span>
             </label>
             <select
               name="state"
               value={locationFormData.state}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             >
               <option value="">Select State</option>
               <option value="NY">New York</option>
               <option value="CA">California</option>
-              {/* Add more states as needed */}
+              {/* Add other states as needed */}
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Zipcode
+              Zipcode <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="zipcode"
-              placeholder="Enter zipcode"
               value={locationFormData.zipcode}
               onChange={handleLocationInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
-          <div className="space-y-2 mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select all that apply
-            </label>
-            <div className="space-y-2">
+          <div className="space-y-4">
+            <div>
               <label className="flex items-center">
                 <input
                   type="checkbox"
                   name="isWorkLocation"
                   checked={locationFormData.isWorkLocation}
                   onChange={handleLocationInputChange}
-                  className="mr-2"
+                  className="w-5 h-5 text-teal-600 border-gray-300 rounded mr-2"
+                  required
                 />
-                Work location
+                <span className="text-gray-700">Work location <span className="text-red-500">*</span></span>
               </label>
+            </div>
+            <div>
               <label className="flex items-center">
                 <input
                   type="checkbox"
                   name="isFillingAddress"
                   checked={locationFormData.isFillingAddress}
                   onChange={handleLocationInputChange}
-                  className="mr-2"
+                  className="w-5 h-5 text-teal-600 border-gray-300 rounded mr-2"
+                  required
                 />
-                Filling address
+                <span className="text-gray-700">Filing address <span className="text-red-500">*</span></span>
               </label>
+            </div>
+            <div>
               <label className="flex items-center">
                 <input
                   type="checkbox"
                   name="isMailingAddress"
                   checked={locationFormData.isMailingAddress}
                   onChange={handleLocationInputChange}
-                  className="mr-2"
+                  className="w-5 h-5 text-teal-600 border-gray-300 rounded mr-2"
+                  required
                 />
-                Mailing address
+                <span className="text-gray-700">Mailing address <span className="text-red-500">*</span></span>
               </label>
             </div>
           </div>
 
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between pt-6">
             <button
               type="button"
               onClick={() => setShowAddLocationModal(false)}
-              className="px-4 py-2 text-gray-700 font-medium"
+              className="text-gray-700 font-normal hover:text-gray-900"
             >
               Back
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
+              className="px-6 py-2 bg-[#008080] text-white rounded-md hover:bg-[#006666] font-normal"
             >
-              Save Location
+              Save and continue
             </button>
           </div>
         </form>

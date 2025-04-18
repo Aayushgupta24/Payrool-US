@@ -19,6 +19,26 @@ interface TeamMember {
   status?: string;
 }
 
+interface DetailedUserInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  businessEmail: string;
+  businessPhone: string;
+  phoneNumber: string;
+  dateOfJoin: string;
+  workerType: string;
+  jobTitle: string;
+  companyLocationCategory: string;
+  stateCode: string;
+  status: string;
+  ssn?: string;
+  directDepositStatus?: string;
+  industry?: string;
+  address?: string;
+  compensation?: string;
+}
+
 interface HiringFormData {
   firstName: string;
   lastName: string;
@@ -31,6 +51,273 @@ interface HiringFormData {
   stateCode: string;
   salary: number;
 }
+
+interface UserActionModalProps {
+  user: DetailedUserInfo | null;
+  loading: boolean;
+  error: string | null;
+  onClose: () => void;
+  onDeactivate: (user: DetailedUserInfo) => void;
+  onEdit: (user: DetailedUserInfo) => void;
+}
+
+const UserActionModal: React.FC<UserActionModalProps> = ({ 
+  user, 
+  loading, 
+  error, 
+  onClose, 
+  onDeactivate, 
+  onEdit 
+}) => {
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-96">
+          <div className="text-center">Loading user details...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-96">
+          <div className="text-red-600 text-center">{error}</div>
+          <button
+            onClick={onClose}
+            className="mt-4 w-full px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-[600px] max-h-[80vh] overflow-y-auto">
+        <h2 className="text-xl font-semibold mb-4">
+          {user.firstName} {user.lastName}
+        </h2>
+        
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-700">Contact Information</h3>
+            <p><span className="font-medium">Work Email:</span> {user.email}</p>
+            {user.personalEmail && (
+              <p><span className="font-medium">Personal Email:</span> {user.personalEmail}</p>
+            )}
+            <p><span className="font-medium">Phone:</span> {user.phoneNumber}</p>
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-700">Employment Details</h3>
+            <p><span className="font-medium">Job Title:</span> {user.jobTitle}</p>
+            <p><span className="font-medium">Worker Type:</span> {user.workerType}</p>
+            <p><span className="font-medium">Start Date:</span> {new Date(user.dateOfJoin).toLocaleDateString()}</p>
+            <p><span className="font-medium">Status:</span> 
+              <span className={`ml-2 px-2 py-1 text-sm rounded-full ${
+                user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {user.status}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-6">
+          <h3 className="font-medium text-gray-700">Location Details</h3>
+          <p><span className="font-medium">Work Location:</span> {user.companyLocationCategory}</p>
+          <p><span className="font-medium">State:</span> {user.stateCode}</p>
+          {user.address && (
+            <div>
+              <p><span className="font-medium">Address:</span></p>
+              <p className="ml-4">
+                {user.address.street}<br />
+                {user.address.city}, {user.address.state} {user.address.zipCode}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <button
+            onClick={() => onEdit(user)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDeactivate(user)}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Deactivate
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const UserDetailsModal: React.FC<{ 
+  user: DetailedUserInfo | null;
+  loading: boolean;
+  error: string | null;
+  onClose: () => void;
+}> = ({ user, loading, error, onClose }) => {
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-4 w-96 border border-gray-100">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-500"></div>
+            <span className="text-gray-500 text-sm">Loading user details...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-4 w-96 border border-gray-100">
+          <div className="text-red-500 text-sm mb-3">{error}</div>
+          <button 
+            onClick={onClose} 
+            className="w-full px-3 py-1.5 bg-gray-50 text-gray-600 rounded-md hover:bg-gray-100 text-sm transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-[700px] max-h-[85vh] overflow-hidden shadow-sm">
+        {/* Enhanced Header with gradient and border */}
+        <div className="relative">
+          {/* Top border line with gradient */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600"></div>
+          
+          {/* Header content with enhanced gradient background */}
+          <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4 border-b border-teal-700">
+            <div className="flex justify-between items-center">
+              <div className="text-white">
+                <h1 className="text-lg font-medium tracking-wide">{`${user.firstName} ${user.lastName}`}</h1>
+                <p className="text-teal-50 text-sm mt-0.5 opacity-90">{user.jobTitle}</p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                user.status === 'Active' 
+                  ? 'bg-green-50 text-green-700' 
+                  : 'bg-red-50 text-red-700'
+              }`}>
+                {user.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 overflow-y-auto">
+          {/* Contact Information */}
+          <div className="bg-gray-50 rounded-md p-3 mb-4 border border-gray-100">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Contact Information</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Work Email</label>
+                <p className="text-sm text-gray-700">{user.email}</p>
+              </div>
+              {user.personalEmail && (
+                <div>
+                  <label className="text-xs text-gray-500">Personal Email</label>
+                  <p className="text-sm text-gray-700">{user.personalEmail}</p>
+                </div>
+              )}
+              <div>
+                <label className="text-xs text-gray-500">Phone Number</label>
+                <p className="text-sm text-gray-700">{user.phoneNumber}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Employment Details */}
+          <div className="bg-gray-50 rounded-md p-3 mb-4 border border-gray-100">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Employment Details</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Worker Type</label>
+                <p className="text-sm text-gray-700">{user.workerType}</p>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Start Date</label>
+                <p className="text-sm text-gray-700">{new Date(user.dateOfJoin).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Compensation</label>
+                <p className="text-sm text-gray-700">{user.compensation || 'Not specified'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Location Details */}
+          <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Location Details</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Work Location</label>
+                <p className="text-sm text-gray-700">{user.companyLocationCategory}</p>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">State</label>
+                <p className="text-sm text-gray-700">{user.stateCode}</p>
+              </div>
+              {user.address && (
+                <div className="col-span-2">
+                  <label className="text-xs text-gray-500">Address</label>
+                  <p className="text-sm text-gray-700">
+                    {user.address.street}, {user.address.city}, {user.address.state} {user.address.zipCode}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-gray-100 px-4 py-3 bg-gray-50">
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 bg-white text-gray-600 rounded-md hover:bg-gray-50 text-sm transition-colors border border-gray-200"
+            >
+              Close
+            </button>
+            <button
+              className="px-3 py-1.5 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm transition-colors"
+              onClick={() => {/* Add edit functionality */}}
+            >
+              Edit Details
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const HiringPage: React.FC = () => {
   useSmartNavigation();
@@ -52,6 +339,71 @@ const HiringPage: React.FC = () => {
     stateCode: '',
     salary: 0
   });
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userDetails, setUserDetails] = useState<DetailedUserInfo | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
+
+  const fetchUserDetails = async (userId: string) => {
+    setLoadingDetails(true);
+    setDetailsError(null);
+    
+    try {
+      const selectedCompanyStr = localStorage.getItem('selectedCompany');
+      if (!selectedCompanyStr) {
+        throw new Error('No company selected');
+      }
+
+      const selectedCompany = JSON.parse(selectedCompanyStr);
+      
+      const response = await api.post('/reports', {
+        method: 'getUser',
+        userId: userId,
+        companyId: selectedCompany.companyID
+      });
+
+      if (response.data.error) {
+        throw new Error(response.data.error.message || 'Failed to fetch user details');
+      }
+
+      setUserDetails(response.data);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error?.message || err.message || 'Failed to fetch user details';
+      setDetailsError(errorMessage);
+      console.error('Error fetching user details:', err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleUserClick = (user: TeamMember) => {
+    setSelectedUserId(user.userID);
+    fetchUserDetails(user.userID);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedUserId(null);
+    setUserDetails(null);
+    setDetailsError(null);
+  };
+
+  const handleDeactivateUser = async (user: TeamMember) => {
+    try {
+      await api.post('/users/deactivate', {
+        email: user.email
+      });
+      // Refresh team members list
+      fetchTeamMembers();
+      setSelectedUserId(null);
+      setSuccess(`Successfully deactivated ${user.user}`);
+    } catch (error) {
+      setError('Failed to deactivate user');
+    }
+  };
+
+  const handleEditUser = (user: TeamMember) => {
+    navigate('/employer/hiring/edit-employee', { state: { user } });
+  };
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -225,21 +577,72 @@ const HiringPage: React.FC = () => {
           <div className="space-x-4">
             <button
               onClick={handleAddEmployee}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="group relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-bold text-white rounded-lg shadow-2xl bg-gradient-to-br from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 transition-all duration-300 ease-out hover:scale-105"
             >
-              Add Employee
+              <span className="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease"></span>
+              <span className="relative flex items-center">
+                <svg 
+                  className="w-5 h-5 mr-2" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth="2" 
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  ></path>
+                </svg>
+                Add Employee
+              </span>
             </button>
             <button
               onClick={handleAddIndependentContractor}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              className="group relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-bold text-white rounded-lg shadow-2xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all duration-300 ease-out hover:scale-105"
             >
-              Add Independent Contractor
+              <span className="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease"></span>
+              <span className="relative flex items-center">
+                <svg 
+                  className="w-5 h-5 mr-2" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth="2" 
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  ></path>
+                </svg>
+                Add Independent Contractor
+              </span>
             </button>
             <button
               onClick={handleAddBusinessContractor}
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+              className="group relative inline-flex items-center justify-center px-6 py-3 overflow-hidden font-bold text-white rounded-lg shadow-2xl bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-300 ease-out hover:scale-105"
             >
-              Add Business Contractor
+              <span className="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease"></span>
+              <span className="relative flex items-center">
+                <svg 
+                  className="w-5 h-5 mr-2" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth="2" 
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  ></path>
+                </svg>
+                Add Business Contractor
+              </span>
             </button>
           </div>
         </div>
@@ -268,7 +671,14 @@ const HiringPage: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {teamMembers.map((member) => (
                   <tr key={member.userID}>
-                    <td className="px-6 py-4 whitespace-nowrap">{member.user}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => handleUserClick(member)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                      >
+                        {member.user}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">{member.jobTitle}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{member.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{member.phoneNumber}</td>
@@ -291,6 +701,15 @@ const HiringPage: React.FC = () => {
           <AddTeamMemberModal
             isOpen={showAddTeamMemberModal}
             onClose={() => setShowAddTeamMemberModal(false)}
+          />
+        )}
+
+        {selectedUserId && (
+          <UserDetailsModal
+            user={userDetails}
+            loading={loadingDetails}
+            error={detailsError}
+            onClose={handleCloseModal}
           />
         )}
       </div>

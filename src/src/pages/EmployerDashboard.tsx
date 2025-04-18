@@ -120,173 +120,125 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
   };
 
   return (
-    <div className="flex-1 p-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">
-            {companyInfo?.company || 'Tex James'}
-          </h1>
-          <div className="flex space-x-4">
-            <button
-              onClick={handleSwitchToEmployee}
-              className="flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              <FiRefreshCcw className="w-5 h-5 mr-2" />
-              Switch to Employee
-            </button>
-            <button 
-              onClick={() => setShowAddTeamMemberModal(true)}
-              className="flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add team member
-            </button>
-            <button 
-              onClick={handlePayContractors}
-              className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
-            >
-              Pay Contractors
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium mb-4">Bank balance</h2>
-          <p className="text-3xl font-bold text-teal-600">$280,000.00</p>
-          <p className="text-sm text-gray-500 mt-2">Last updated on 12/18/2024</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium mb-4">Next payroll</h2>
-          <p className="text-3xl font-bold text-teal-600">$4,046.15</p>
-          <p className="text-sm text-red-500 mt-2">Overdue by 222 days</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium mb-4">Last payroll</h2>
-          <p className="text-3xl font-bold text-teal-600">$11,102.05</p>
-          <p className="text-sm text-gray-500 mt-2">For 12/20/2024</p>
-        </div>
-      </div>
-
-      {/* Tasks Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-        <div className="space-y-4">
-          {/* Add wage task */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-2 rounded-md mr-4">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium">Add wage</h3>
-                  <p className="text-sm text-gray-500">Enter pay details to 2 team members ready for payday</p>
-                </div>
-              </div>
-              <button 
-                onClick={handleAddWage}
-                className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
+    <div className="flex-1 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header Section with Enhanced Buttons */}
+        <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl p-6 mb-6 shadow-lg">
+          <div className="flex justify-between items-center">
+            <div className="text-white">
+              <h1 className="text-3xl font-bold mb-1">
+                {companyInfo?.company || 'Tex James'}
+              </h1>
+              <p className="text-teal-100 text-sm">Welcome back! Here's your business overview</p>
+            </div>
+            <div className="flex space-x-4">
+              <button
+                onClick={handleSwitchToEmployee}
+                className="flex items-center px-5 py-2.5 bg-white/10 text-white rounded-lg 
+                  hover:bg-white/20 transition-all duration-300 transform hover:scale-105
+                  focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
               >
-                Add wage
+                <FiRefreshCcw className="w-4 h-4 mr-2" />
+                Switch to Employee
               </button>
-            </div>
-          </div>
-
-          {/* Form 8655 signature request */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-2 rounded-md mr-4">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium">Form 8655 signature request</h3>
-                  <p className="text-sm text-gray-500">Form 8655 allows us to file and pay taxes on your behalf</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
-                Complete signing
-              </button>
-            </div>
-          </div>
-
-          {/* Form TR-2000 signature request */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-2 rounded-md mr-4">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium">Form TR-2000 signature request</h3>
-                  <p className="text-sm text-gray-500">Form TR-2000 allows us to file and pay taxes on your behalf</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
-                Complete signing
-              </button>
-            </div>
-          </div>
-
-          {/* Form DR-835 Signature request */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-2 rounded-md mr-4">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium">Form DR-835 Signature request</h3>
-                  <p className="text-sm text-gray-500">Form DR-835 allows us to file and pay taxes on your behalf</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
-                Complete signing
-              </button>
-            </div>
-          </div>
-
-          {/* Run payroll */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-2 rounded-md mr-4">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium">Run payroll</h3>
-                  <p className="text-sm text-gray-500">Overdue for employees by 222 days to run payroll for 09/30/2024 - 10/14/2024 and Overdue for contractors by 193 days to run payroll for 09/16/2024 - 09/30/2024</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
-                Run payroll
+              <button 
+                onClick={() => setShowAddTeamMemberModal(true)}
+                className="flex items-center px-5 py-2.5 bg-teal-500 text-white rounded-lg
+                  hover:bg-teal-400 transition-all duration-300 transform hover:scale-105
+                  shadow-md hover:shadow-lg focus:outline-none focus:ring-2 
+                  focus:ring-teal-400 active:scale-95"
+              >
+                <FiUserPlus className="w-4 h-4 mr-2" />
+                Add Team Member
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      <AddTeamMemberModal 
-        isOpen={showAddTeamMemberModal}
-        onClose={() => setShowAddTeamMemberModal(false)}
-      />
+        {/* Action Buttons Section */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <button
+            onClick={() => setShowPayrollModal(true)}
+            className="flex items-center px-6 py-3 bg-white text-teal-600 rounded-xl
+              border-2 border-teal-600 hover:bg-teal-600 hover:text-white
+              transition-all duration-300 transform hover:scale-105 shadow-sm
+              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400"
+          >
+            <FiDollarSign className="w-5 h-5 mr-2" />
+            Run Payroll
+          </button>
+          
+          <button
+            onClick={() => setShowReportsModal(true)}
+            className="flex items-center px-6 py-3 bg-white text-indigo-600 rounded-xl
+              border-2 border-indigo-600 hover:bg-indigo-600 hover:text-white
+              transition-all duration-300 transform hover:scale-105 shadow-sm
+              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <FiPieChart className="w-5 h-5 mr-2" />
+            View Reports
+          </button>
+
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className="flex items-center px-6 py-3 bg-white text-gray-700 rounded-xl
+              border-2 border-gray-300 hover:bg-gray-700 hover:text-white hover:border-gray-700
+              transition-all duration-300 transform hover:scale-105 shadow-sm
+              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            <FiSettings className="w-5 h-5 mr-2" />
+            Settings
+          </button>
+        </div>
+
+        {/* Quick Stats Grid with Enhanced Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">Total Employees</p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-1">24</h3>
+              </div>
+              <div className="bg-teal-100 p-3 rounded-xl">
+                <FiUsers className="w-6 h-6 text-teal-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center">
+              <span className="text-green-500 text-sm font-medium">↑ 12%</span>
+              <span className="text-gray-400 text-sm ml-2">vs last month</span>
+            </div>
+          </div>
+          {/* Repeat similar styling for other stat cards */}
+        </div>
+
+        {/* Table Actions */}
+        <div className="bg-white rounded-xl p-6 shadow-md">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-800">Recent Activities</h2>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleExport()}
+                className="flex items-center px-4 py-2 text-sm bg-green-50 text-green-600
+                  rounded-lg hover:bg-green-100 transition-all duration-300
+                  focus:outline-none focus:ring-2 focus:ring-green-400"
+              >
+                <FiDownload className="w-4 h-4 mr-2" />
+                Export
+              </button>
+              <button
+                onClick={() => handleFilter()}
+                className="flex items-center px-4 py-2 text-sm bg-blue-50 text-blue-600
+                  rounded-lg hover:bg-blue-100 transition-all duration-300
+                  focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <FiFilter className="w-4 h-4 mr-2" />
+                Filter
+              </button>
+            </div>
+          </div>
+          {/* Table content */}
+        </div>
+      </div>
     </div>
   );
 };

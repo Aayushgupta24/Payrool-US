@@ -4,116 +4,68 @@ import { useCopilotAction } from '@copilotkit/react-core';
 export function useSmartNavigation() {
   const navigate = useNavigate();
 
-  // Updated routeMap with more specific and comprehensive mappings
-  const routeMap = {
-    // Admin routes
-    'admin': '/admin',
-    'admin dashboard': '/admin',
-    'admin users': '/admin/users',
-    'users': '/admin/users',
-    'manage users': '/admin/users',
-    // Employee routes
-    'employee': '/employee/dashboard',
-    'employee dashboard': '/employee/dashboard',
-    'employee documents': '/employee/documents',
-    'employee details': '/employee/details',
-    'employee paystubs': '/employee/paystubs',
-    'my documents': '/employee/documents',
-    'my details': '/employee/details',
-    'my paystubs': '/employee/paystubs',
-    
-    // Employer routes
-    'employer': '/employer/dashboard',
-    'employer dashboard': '/employer/dashboard',
-    'hiring': '/employer/hiring',
-    'add employee': '/employer/hiring/add-employee',
-    'new employee': '/employer/hiring/add-employee',
-    'add contractor': '/employer/hiring/add-independent-contractor',
-    'new contractor': '/employer/hiring/add-independent-contractor',
-    'add business': '/employer/hiring/add-business-contractor',
-    'benefits': '/employer/benefits',
-    'taxes': '/employer/taxes',
-    'payroll': '/employer/payroll',
-    'team': '/employer/team',
-    'company': '/employer/company',
-    'documents': '/employer/documents',
-    'settings': '/employer/settings',
-    'help': '/employer/help'
+  const smoothNavigate = (path: string) => {
+    // Create loading bar
+    const loadingBar = document.createElement('div');
+    loadingBar.className = 'loading-bar';
+    document.body.appendChild(loadingBar);
+
+    // Animate loading bar
+    loadingBar.animate([
+      { transform: 'scaleX(0)' },
+      { transform: 'scaleX(0.3)' },
+      { transform: 'scaleX(0.7)' },
+      { transform: 'scaleX(1)' }
+    ], {
+      duration: 500,
+      easing: 'ease-out'
+    });
+
+    // Create transition overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'page-overlay';
+    document.body.appendChild(overlay);
+
+    // Animate current page out
+    const currentPage = document.querySelector('.page-transition-wrapper');
+    if (currentPage) {
+      currentPage.animate([
+        { opacity: 1, transform: 'scale(1)' },
+        { opacity: 0, transform: 'scale(0.98)' }
+      ], {
+        duration: 300,
+        easing: 'ease-out'
+      });
+    }
+
+    // Navigate after short delay
+    setTimeout(() => {
+      navigate(path);
+      
+      // Clean up
+      setTimeout(() => {
+        loadingBar.remove();
+        overlay.remove();
+      }, 500);
+    }, 300);
   };
 
+  // Register copilot action for navigation
   useCopilotAction({
     name: "navigate",
-    description: "Navigate to a different page in the application",
+    description: "Navigate to different pages in the application",
     parameters: [
       {
         name: "destination",
         type: "string",
-        description: "The page to navigate to (e.g., 'admin dashboard', 'users', 'employee documents', etc.)"
+        description: "The destination to navigate to"
       }
     ],
     handler: async ({ destination }) => {
-      const normalizedDestination = destination.toLowerCase().trim();
-      
-      // Try exact match first
-      let path = routeMap[normalizedDestination];
-      
-      // If no exact match, try partial match
-      if (!path) {
-        const matchingEntry = Object.entries(routeMap).find(([key]) => 
-          normalizedDestination.includes(key.toLowerCase())
-        );
-        path = matchingEntry?.[1];
-      }
-
-      if (path) {
-        navigate(path);
-        return `Navigated to ${destination}`;
-      }
-      
-      return `Could not find a matching route for "${destination}". Available destinations are: ${Object.keys(routeMap).join(', ')}`;
+      smoothNavigate(destination);
+      return `Navigated to ${destination}`;
     }
   });
 
-  useCopilotAction({
-    name: "switchTo",
-    description: "Switch between admin, employee, or employer view",
-    parameters: [
-      {
-        name: "view",
-        type: "string",
-        description: "The view to switch to (admin/employee/employer)"
-      }
-    ],
-    handler: async ({ view }) => {
-      const normalizedView = view.toLowerCase().trim();
-      
-      switch (normalizedView) {
-        case 'admin':
-        case 'admin dashboard':
-        case 'admin view':
-          navigate('/admin');
-          return 'Switched to admin view';
-        
-        case 'employee':
-        case 'employee dashboard':
-        case 'employee view':
-          navigate('/employee/dashboard');
-          return 'Switched to employee view';
-        
-        case 'employer':
-        case 'employer dashboard':
-        case 'employer view':
-          navigate('/employer/dashboard');
-          return 'Switched to employer view';
-        
-        default:
-          return `Invalid view: ${view}. Please specify 'admin', 'employee', or 'employer'.`;
-      }
-    }
-  });
+  return { smoothNavigate };
 }
-
-
-
-
-

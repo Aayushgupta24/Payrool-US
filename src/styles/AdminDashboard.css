@@ -1,0 +1,72 @@
+/* Enhanced AdminDashboard Styles */
+.transition-all {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Enhanced card hover effects */
+.hover\:shadow-xl:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+/* Enhanced table styles */
+.table-container {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+/* Enhanced scrollbar */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #E5E7EB transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: #E5E7EB;
+  border-radius: 4px;
+}
+
+/* Enhanced status badge animations */
+.status-badge {
+  transition: all 0.2s ease;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #00a0a0 0%, #008080 100%);
+}
+
+/* Enhanced button hover effects */
+.button-hover {
+  transition: all 0.3s ease;
+}
+
+.button-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Card animations */
+.card-animate {
+  transition: all 0.3s ease;
+}
+
+.card-animate:hover {
+  transform: translateY(-4px);
+}
+
+/* Enhanced focus states */
+.focus-visible:focus {
+  outline: none;
+  ring: 2px;
+  ring-offset: 2px;
+  ring-teal-500;
+}

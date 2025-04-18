@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import { FiUserPlus } from 'react-icons/fi';
+import { FiUserPlus, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
 import api from '../services/apiConfig';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 import { useNavigationStore } from '../store/navigationStore';
@@ -8,6 +8,7 @@ import { adminService } from '../services/adminService';
 import axios from 'axios';
 import { getAccessToken } from '../utils/auth';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface User {
   userID: string;
@@ -54,6 +55,95 @@ const UsersPage: React.FC = () => {
     companyLocationCategory: 'Remote',
     code: 'FL'
   });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<User>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setEditFormData({
+      user: user.user,
+      email: user.email,
+      jobTitle: user.jobTitle,
+      phoneNumber: user.phoneNumber,
+      workerType: user.workerType
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!selectedUser) return;
+
+      const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
+        method: 'updateUser',
+        user: {
+          userID: selectedUser.userID,
+          ...editFormData
+        }
+      });
+
+      if (!response.data || response.data.error) {
+        throw new Error(response.data?.error?.message || 'Failed to update user');
+      }
+
+      await fetchUsers();
+      setShowEditModal(false);
+      setSelectedUser(null);
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      alert(error.message);
+    }
+  };
+
+  const handleDeleteClick = async (user: User) => {
+    if (!window.confirm(`Are you sure you want to delete ${user.user}?`)) return;
+
+    try {
+      const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
+        method: 'deactivateUser',
+        user: {
+          userId: user.userID,
+          exitDate: new Date().toISOString().split('T')[0],
+          personalEmail: user.email,
+          finalPayCheckType: "They have already been paid",
+          additionalNotes: "User deleted via admin portal"
+        }
+      });
+
+      if (!response.data || response.data.error) {
+        throw new Error(response.data?.error?.message || 'Failed to delete user');
+      }
+
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      alert(error.message);
+    }
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchQuery(term);
+    
+    if (!term.trim()) {
+      setFilteredUsers(users);
+      return;
+    }
+
+    const searchTerm = term.toLowerCase();
+    const filtered = users.filter(user => 
+      user.user?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.jobTitle?.toLowerCase().includes(searchTerm) ||
+      user.phoneNumber?.toLowerCase().includes(searchTerm) ||
+      user.workerType?.workerType?.toLowerCase().includes(searchTerm)
+    );
+    
+    setFilteredUsers(filtered);
+  };
 
   useEffect(() => {
     if (intent?.page === 'users') {
@@ -256,37 +346,14 @@ const UsersPage: React.FC = () => {
         companyName: selectedCompany.company
       });
 
-      const data = response.data;
-      console.log('API Response:', data);
-
-      if (data && typeof data === 'object') {
-        let usersData: User[] = [];
-        
-        if (Array.isArray(data)) {
-          usersData = data;
-        } else if (Array.isArray(data.users)) {
-          usersData = data.users;
-        } else if (data.data && Array.isArray(data.data.users)) {
-          usersData = data.data.users;
-        } else if (data.data && Array.isArray(data.data)) {
-          usersData = data.data;
-        }
-
-        if (usersData.length === 0) {
-          console.log('No users found in response');
-        } else {
-          console.log('Found users:', usersData);
-        }
-
-        setUsers(usersData);
-      } else {
-        throw new Error('Invalid response format');
+      if (response.data) {
+        setUsers(response.data);
+        setFilteredUsers(response.data); // Initialize filtered users
+        setSearchQuery(''); // Reset search query
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || err.message || 'Failed to fetch users';
-      console.error('Error fetching users:', err);
-      setError(errorMessage);
-      setUsers([]);
+    } catch (error: any) {
+      console.error('Error fetching users:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -366,136 +433,34 @@ const UsersPage: React.FC = () => {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold">Users</h1>
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700"
-          >
-            <FiUserPlus size={20} />
-            Add new user
-          </button>
-        </div>
-
-        {/* Add User Modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-[600px]">
-              <h2 className="text-xl font-semibold mb-4">Add New User</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">First Name</label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Middle Name</label>
-                    <input
-                      type="text"
-                      name="middleName"
-                      value={formData.middleName}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Date of Join</label>
-                    <input
-                      type="date"
-                      name="dateOfJoin"
-                      value={formData.dateOfJoin}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Job Title</label>
-                    <input
-                      type="text"
-                      name="jobTitle"
-                      value={formData.jobTitle}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-4 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
-                  >
-                    Add User
-                  </button>
-                </div>
-              </form>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Users</h1>
+            <div className="flex items-center">
+              <div className="relative mr-4">
+                <input
+                  type="text"
+                  placeholder="Search for anything..."
+                  className="border rounded-lg px-4 py-2 pl-10 w-64 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+                <FiSearch className="absolute left-3 top-3 text-gray-400" />
+              </div>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors"
+              >
+                <FiUserPlus className="inline-block mr-2" />
+                Add User
+              </button>
             </div>
           </div>
-        )}
 
-        {loading ? (
-          <div className="text-center py-4">Loading users...</div>
-        ) : error ? (
-          <div className="text-center py-4 text-red-600">{error}</div>
-        ) : (
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full">
-              <thead>
+          {/* Users Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr className="border-b">
                   <th className="text-left p-4 font-medium text-gray-600">Name</th>
                   <th className="text-left p-4 font-medium text-gray-600">Email</th>
@@ -505,9 +470,23 @@ const UsersPage: React.FC = () => {
                   <th className="text-left p-4 font-medium text-gray-600">KYC Status</th>
                 </tr>
               </thead>
-              <tbody>
-                {users.length > 0 ? (
-                  users.map((user) => (
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4">Loading...</td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4 text-red-500">{error}</td>
+                  </tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4">
+                      {searchQuery ? "No users found matching your search" : "No users found"}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user) => (
                     <tr key={user.userID} className="border-b hover:bg-gray-50">
                       <td className="p-4">{user.user}</td>
                       <td className="p-4 text-gray-600">{user.email}</td>
@@ -523,19 +502,27 @@ const UsersPage: React.FC = () => {
                           {user.kycStatus || 'Not Started'}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button 
+                          onClick={() => handleEditClick(user)}
+                          className="text-blue-600 hover:text-blue-900 mr-3 flex items-center"
+                        >
+                          <FiEdit2 className="mr-1" /> Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClick(user)}
+                          className="text-red-600 hover:text-red-900 flex items-center"
+                        >
+                          <FiTrash2 className="mr-1" /> Delete
+                        </button>
+                      </td>
                     </tr>
                   ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="text-center py-4 text-gray-500">
-                      No users found
-                    </td>
-                  </tr>
                 )}
               </tbody>
             </table>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

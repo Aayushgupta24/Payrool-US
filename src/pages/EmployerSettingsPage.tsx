@@ -90,7 +90,9 @@ const EmployerSettingsPage: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-6">Add New User</h2>
         <form className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              First name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="firstName"
@@ -98,11 +100,14 @@ const EmployerSettingsPage: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter first name"
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Middle name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Middle name
+            </label>
             <input
               type="text"
               name="middleName"
@@ -114,7 +119,9 @@ const EmployerSettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Last name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="lastName"
@@ -122,11 +129,14 @@ const EmployerSettingsPage: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter last name"
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone number</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone number <span className="text-red-500">*</span>
+            </label>
             <input
               type="tel"
               name="phoneNumber"
@@ -134,11 +144,14 @@ const EmployerSettingsPage: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter phone number"
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
               name="email"
@@ -146,11 +159,14 @@ const EmployerSettingsPage: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter email"
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">What is their role?</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              What is their role? <span className="text-red-500">*</span>
+            </label>
             <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
             <div className="space-y-3">
               <label className="flex items-center">

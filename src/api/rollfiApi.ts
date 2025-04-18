@@ -104,3 +104,47 @@ export const deactivateUser = async (user: DeactivateUserPayload) => {
 export const addSingleUser = async (companyId: string, user: User) => {
   return addUsers(companyId, [user]);
 };
+
+// Get user details
+export const getUserDetails = async (userId: string, companyId: string) => {
+  const token = await getAccessToken();
+
+  const response = await axios({
+    method: 'get',
+    url: 'https://sandbox.rollfi.xyz/reports',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    data: {
+      method: 'getUser',
+      userId,
+      companyId
+    }
+  });
+
+  return response.data;
+};
+
+// Add this new function to fetch active users
+export const getActiveUsers = async (companyId: string, workerType: 'W2' | '1099' = 'W2') => {
+  const token = await getAccessToken();
+
+  const payload = {
+    method: 'getActiveUsers',
+    companyId,
+    workerType
+  };
+
+  const { data } = await axios({
+    method: 'get',
+    url: `${ROLLFI_BASE_URL}/reports`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    data: payload
+  });
+
+  return data;
+};

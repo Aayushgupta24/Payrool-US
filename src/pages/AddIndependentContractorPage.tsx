@@ -1,96 +1,275 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+interface ContractorFormData {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  serviceDescription: string;
+  startDate: string;
+  endDate: string;
+  contractorRate: string;
+  paymentTerms: string;
+  businessName: string;
+  taxIdNumber: string;
+}
 
 const AddIndependentContractorPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<ContractorFormData>({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    serviceDescription: '',
+    startDate: '',
+    endDate: '',
+    contractorRate: '',
+    paymentTerms: '',
+    businessName: '',
+    taxIdNumber: ''
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+    navigate('/employer/hiring');
+  };
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-6">Add Independent Contractor</h1>
-      <form className="space-y-6 max-w-2xl">
-        <div className="space-y-4">
-          <h2 className="text-xl font-medium">Personal Information</h2>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">First Name</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              />
+    <div className="flex-1 p-8 bg-gray-50">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-8">
+        <h1 className="text-3xl font-semibold mb-8 text-gray-800">Add Independent Contractor</h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Personal Information Section */}
+          <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-medium mb-6 text-gray-700">Personal Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  required
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter first name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Middle Name
+                </label>
+                <input
+                  type="text"
+                  name="middleName"
+                  value={formData.middleName}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter middle name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  required
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter last name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter email address"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  required
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter phone number"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Last Name</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              />
+          </div>
+
+          {/* Business Information Section */}
+          <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-medium mb-6 text-gray-700">Business Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Business Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="businessName"
+                  required
+                  value={formData.businessName}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter business name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Tax ID Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="taxIdNumber"
+                  required
+                  value={formData.taxIdNumber}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Enter tax ID number"
+                />
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
+          {/* Contract Details Section */}
+          <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-medium mb-6 text-gray-700">Contract Details</h2>
+            <div className="space-y-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Service Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="serviceDescription"
+                  required
+                  value={formData.serviceDescription}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  placeholder="Describe the services to be provided"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-            <input
-              type="tel"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Start Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    required
+                    value={formData.startDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  />
+                </div>
 
-        <div className="space-y-4">
-          <h2 className="text-xl font-medium">Contract Details</h2>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Service Description</label>
-            <textarea
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              rows={3}
-            />
-          </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    End Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    required
+                    value={formData.endDate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                  />
+                </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Rate</label>
-              <input
-                type="number"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              />
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Contractor Rate <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="contractorRate"
+                    required
+                    value={formData.contractorRate}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                    placeholder="Enter rate (e.g., $50/hour)"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Payment Terms <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="paymentTerms"
+                    required
+                    value={formData.paymentTerms}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 text-lg"
+                    placeholder="Enter payment terms"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Rate Type</label>
-              <select
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              >
-                <option>Hourly</option>
-                <option>Daily</option>
-                <option>Weekly</option>
-                <option>Monthly</option>
-                <option>Project-based</option>
-              </select>
-            </div>
           </div>
-        </div>
 
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 text-white bg-teal-600 rounded-md hover:bg-teal-700"
-          >
-            Add Contractor
-          </button>
-        </div>
-      </form>
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-4 pt-6">
+            <button
+              type="button"
+              onClick={() => navigate('/employer/hiring')}
+              className="px-6 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 text-lg font-medium shadow-md hover:shadow-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all duration-300 text-lg font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+            >
+              Add Independent Contractor
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

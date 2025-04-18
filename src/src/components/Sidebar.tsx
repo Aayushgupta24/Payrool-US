@@ -1,110 +1,73 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  FiGrid, FiUsers, FiSettings, FiHelpCircle,
-  FiRefreshCcw, FiLogOut
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  FiHome, FiDollarSign, FiUsers, FiFileText, 
+  FiSettings, FiHelpCircle, FiBriefcase,
+  FiShield, FiCreditCard, FiActivity
 } from 'react-icons/fi';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const [isHovered, setIsHovered] = useState(false);
-
+  
   const menuItems = [
-    { icon: <FiGrid size={20} />, label: 'Dashboard', path: '/admin' },
-    { icon: <FiUsers size={20} />, label: 'Users', path: '/admin/users' },
+    { icon: FiHome, label: 'Dashboard', path: '/employer/dashboard' },
+    { icon: FiDollarSign, label: 'Payroll', path: '/employer/payroll' },
+    { icon: FiUsers, label: 'Team', path: '/employer/team' },
+    { icon: FiBriefcase, label: 'Hiring', path: '/employer/hiring' },
+    { icon: FiFileText, label: 'Documents', path: '/employer/documents' },
+    { icon: FiShield, label: 'Benefits', path: '/employer/benefits' },
+    { icon: FiCreditCard, label: 'Taxes', path: '/employer/taxes' },
+    { icon: FiActivity, label: 'Company', path: '/employer/company' },
+    { icon: FiSettings, label: 'Settings', path: '/employer/settings' },
+    { icon: FiHelpCircle, label: 'Help', path: '/employer/help' },
   ];
 
-  const handleSwitchToEmployee = () => {
-    navigate('/employee/dashboard');
-  };
-
-  const handleSignOut = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('selectedCompany');
-    navigate('/');
-  };
-
   return (
-    <>
-      <div 
-        className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out z-50 ${
-          isHovered ? 'w-64' : 'w-16'
-        }`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Company Logo */}
-        <div className={`px-4 py-6 ${isHovered ? 'px-6' : 'px-2'}`}>
-          {isHovered ? (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">GrowthPods Demo</h2>
-              <div className="text-sm text-gray-500">Hire. Pay. Manage.</div>
-            </div>
-          ) : (
-            <div className="w-8 h-8">
-              <img src="/growth-pods.png" alt="GP" className="w-full h-full" />
-              <img src="/logo1.png" alt="GP" className="w-full h-full" />
-
-            </div>
-          )}
+    <div className="w-64 bg-white h-screen fixed left-0 border-r border-gray-200">
+      <div className="flex flex-col h-full">
+        <div className="p-6">
+          <img 
+            src="/logo.svg" 
+            alt="GrowthPods Logo" 
+            className="h-8 w-auto"
+          />
         </div>
-
-        {/* Divider */}
-        <div className="h-px bg-gray-200" />
-
-        {/* Navigation Menu */}
-        <nav className={`flex-1 ${isHovered ? 'px-3' : 'px-2'} py-6 overflow-y-auto`}>
-          {menuItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`
-                flex items-center w-full px-3 py-2 mb-1 rounded-lg text-sm font-medium
-                ${location.pathname === item.path
-                  ? 'bg-teal-600 text-white' 
-                  : 'text-gray-900 hover:bg-gray-100'}
-                ${!isHovered ? 'justify-center' : ''}
-              `}
-            >
-              <span className={isHovered ? 'mr-3' : ''}>{item.icon}</span>
-              {isHovered && <span className="truncate">{item.label}</span>}
-            </button>
-          ))}
+        
+        <nav className="flex-1 px-4 space-y-1">
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  isActive 
+                    ? 'bg-teal-50 text-teal-700' 
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <item.icon className={`w-5 h-5 mr-3 ${
+                  isActive ? 'text-teal-700' : 'text-gray-400'
+                }`} />
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Bottom section */}
-        <div className={`${isHovered ? 'px-3' : 'px-2'} py-4 border-t border-gray-200`}>
-          <button
-            onClick={handleSwitchToEmployee}
-            className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 
-              hover:bg-gray-100 rounded-lg mb-2
-              ${!isHovered ? 'justify-center' : ''}
-            `}
-          >
-            <FiRefreshCcw className={isHovered ? 'mr-3' : ''} size={20} />
-            {isHovered && 'Switch to Employee'}
-          </button>
-          <button
-            onClick={handleSignOut}
-            className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 
-              hover:bg-gray-100 rounded-lg
-              ${!isHovered ? 'justify-center' : ''}
-            `}
-          >
-            <FiLogOut className={isHovered ? 'mr-3' : ''} size={20} />
-            {isHovered && 'Sign out'}
-          </button>
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+              <FiUser className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-900">John Doe</p>
+              <p className="text-xs text-gray-500">Administrator</p>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Main content margin */}
-      <div className={`${isHovered ? 'ml-64' : 'ml-16'} transition-all duration-300 ease-in-out`}>
-        {/* Your main content goes here */}
-      </div>
-    </>
+    </div>
   );
 };
 

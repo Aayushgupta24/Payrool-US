@@ -4,11 +4,12 @@ import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 import { employerService } from '../services/employerService';
 import AddTeamMemberModal from '../components/AddTeamMemberModal';
 import { FiRefreshCcw } from 'react-icons/fi';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 interface EmployerDashboardProps {}
 
 const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
-  const navigate = useNavigate();
+  const { smoothNavigate } = useSmartNavigation();
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [dashboardData, setDashboardData] = useState({
@@ -104,19 +105,23 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = () => {
   });
 
   const handlePayContractors = () => {
-    navigate('/employer/payroll', { state: { activeTab: 'Pay Contractors' } });
+    smoothNavigate('/employer/payroll', { state: { activeTab: 'Pay Contractors' } });
   };
 
   const handlePayEmployees = () => {
-    navigate('/employer/payroll', { state: { activeTab: 'Pay Employees' } });
+    smoothNavigate('/employer/payroll', { state: { activeTab: 'Pay Employees' } });
   };
 
   const handleAddWage = () => {
-    navigate('/employer/hiring');
+    smoothNavigate('/employer/hiring');
   };
 
   const handleSwitchToEmployee = () => {
-    navigate('/employee/dashboard');
+    smoothNavigate('/employee/dashboard');
+  };
+
+  const handleNavigation = (path: string) => {
+    smoothNavigate(path);
   };
 
   return (

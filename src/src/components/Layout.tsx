@@ -10,8 +10,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1">
-        {children}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          {children}
+        </div>
         <CopilotPopup
           instructions={`You are the GrowthPods AI assistant. Help users with:
             - Managing employees and contractors
@@ -25,7 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             initial: "Need help with anything?",
             placeholder: "Ask me anything about your account...",
           }}
-          className="bottom-4 right-4"
+          className="fixed bottom-4 right-4 z-50"
         />
       </div>
     </div>
