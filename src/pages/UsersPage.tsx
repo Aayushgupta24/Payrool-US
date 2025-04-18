@@ -2,17 +2,24 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { FiUserPlus } from 'react-icons/fi';
 import api from '../services/apiConfig';
-import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
+import { 
+  useCopilotReadable, 
+  useCopilotAction, 
+  useCopilotAdditionalInstructions 
+} from '@copilotkit/react-core';
 import { useNavigationStore } from '../store/navigationStore';
 import { adminService } from '../services/adminService';
 import axios from 'axios';
 import { getAccessToken } from '../utils/auth';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { PromptManager } from '../services/promptManager';
+// import { utf8ToBase64, base64ToUtf8 } from '../utils/base64';
 
 interface User {
   userID: string;
   user: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   dateOfJoin: string;
   jobTitle: string;
@@ -21,6 +28,8 @@ interface User {
   workerType: {
     workerType: string;
   };
+  status?: string;
+  role?: string;
 }
 
 interface AddUserFormData {
@@ -34,6 +43,37 @@ interface AddUserFormData {
   jobTitle: string;
   companyLocationCategory: string;
   code: string;
+}
+
+// Define the type for the params in the addUser handler
+interface AddUserParams {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfJoin: string;
+  workerType: string;
+  jobTitle: string;
+  companyLocationCategory?: string;
+  code: string;
+}
+
+// Define the type for the newUser object
+interface NewUserPayload {
+  companyId: string;
+  userReferenceId: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfJoin: string;
+  workerType: string;
+  jobTitle: string;
+  companyLocationCategory: string;
+  code: string;
+  companyLocationId: string;
 }
 
 const UsersPage: React.FC = () => {
@@ -65,6 +105,12 @@ const UsersPage: React.FC = () => {
     }
   }, []);
 
+  // Handle search function
+  const handleSearch = (searchTerm: string) => {
+    console.log('Searching for:', searchTerm);
+    // Implement search functionality here
+  };
+
   useEffect(() => {
     if (intent?.page === 'users') {
       if (intent.action === 'openAddModal') {
@@ -79,31 +125,85 @@ const UsersPage: React.FC = () => {
     }
   }, [intent, setIntent]);
 
-  useCopilotReadable({
-    name: "users",
-    description: "List of all users in the current company",
-    value: users
+  // Implement Copilot additional instructions for step-by-step user details collection
+  useCopilotAdditionalInstructions({
+    instructions: `
+    When collecting user details for adding a new user:
+    1. Ask for and collect one field at a time in this specific order: first name, last name, email, phone number, job title, worker type, date of join, and state code.
+    2. Validate each field before proceeding to the next one:
+       - First name should not be empty, should not contain numbers, and should be maximum 50 characters
+       - Last name should not be empty and should not contain numbers
+       - Email should be in a valid format
+       - Phone number should be properly formatted (10 digits)
+       - Date of join should be a valid date
+       - State code must be a valid two-letter US state code
+    3. After collecting all required fields, summarize the information and ask for confirmation before submitting.
+    4. If there are any errors during submission, clearly explain the issue and which field needs correction.
+    `,
+    available: "enabled"
   });
 
-  useCopilotReadable({
-    name: "userStats",
-    description: "Statistics about users including total count and role distribution",
-    value: {
-      totalUsers: users.length,
-      activeUsers: users.filter(u => u.status === 'active').length,
-      roleDistribution: users.reduce((acc, user) => {
+  // Make data available to Copilot
+  const userStats = {
+    totalUsers: users.length,
+    activeUsers: users.filter(u => u.status === 'active').length,
+    roleDistribution: users.reduce((acc, user) => {
+      if (user.role) {
         acc[user.role] = (acc[user.role] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
+      }
+      return acc;
+    }, {} as Record<string, number>)
+  };
+
+  // Improved validation helper function
+  function validateUserInput(input: any): string[] {
+    const errors: string[] = [];
+    
+    // First Name validation
+    if (!input.firstName?.trim()) {
+      errors.push('First name is required');
+    } else {
+      if (input.firstName.length > 50) {
+        errors.push('First name must be maximum 50 characters');
+      }
+      if (/\d/.test(input.firstName)) {
+        errors.push('First name should not contain numbers');
+      }
+      // More permissive regex that allows for more special characters and international names
+      if (!/^[\p{L}\s'-\.]+$/u.test(input.firstName)) {
+        errors.push('First name contains invalid characters');
+      }
     }
-  });
+
+    // Other validations...
+    if (!input.lastName?.trim()) errors.push('Last name is required');
+    if (/\d/.test(input.lastName)) errors.push('Last name should not contain numbers');
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(input.email)) {
+      errors.push('Invalid email format');
+    }
+    if (!/^\d{10}$/.test(input.phoneNumber.replace(/\D/g, ''))) {
+      errors.push('Phone number must be 10 digits');
+    }
+    if (!input.dateOfJoin || isNaN(new Date(input.dateOfJoin).getTime())) {
+      errors.push('Invalid date format');
+    }
+    if (!['W2', '1099'].includes(input.workerType)) {
+      errors.push('Worker type must be either W2 or 1099');
+    }
+    if (!input.jobTitle?.trim()) errors.push('Job title is required');
+    if (!/^[A-Z]{2}$/.test(input.code.toUpperCase())) {
+      errors.push('Invalid state code format');
+    }
+
+    return errors;
+  }
 
   // Add User Action with improved validation and feedback
   useCopilotAction({
     name: "addUser",
     description: "Add a new user to the system",
     parameters: [
-      { name: "firstName", type: "string", description: "User's first name" },
+      { name: "firstName", type: "string", description: "User's first name (max 50 characters, letters only)" },
       { name: "middleName", type: "string", description: "User's middle name (optional)" },
       { name: "lastName", type: "string", description: "User's last name" },
       { name: "email", type: "string", description: "User's email address" },
@@ -120,9 +220,20 @@ const UsersPage: React.FC = () => {
     ],
     handler: async (params) => {
       try {
-        // Validate state code
-        if (!params.code || !/^[A-Z]{2}$/.test(params.code.toUpperCase())) {
-          throw new Error('Please provide a valid two-letter state code (e.g., FL, NY, CA)');
+        // Decode the first name if it's base64 encoded
+        let firstName = params.firstName;
+        
+        // Validation checks
+        if (!firstName || firstName.trim().length === 0) {
+          throw new Error('First name is required');
+        }
+        
+        if (firstName.trim().length > 50) {
+          throw new Error('First name must be maximum 50 characters');
+        }
+        
+        if (/\d/.test(firstName)) {
+          throw new Error('First name should not contain numbers');
         }
 
         const selectedCompanyStr = localStorage.getItem('selectedCompany');
@@ -132,10 +243,11 @@ const UsersPage: React.FC = () => {
         const formattedPhone = params.phoneNumber.replace(/\D/g, '');
         const formattedDate = new Date(params.dateOfJoin).toISOString().split('T')[0];
 
+        // Create the new user object with validated data
         const newUser = {
           companyId: selectedCompany.companyID,
           userReferenceId: "",
-          firstName: params.firstName.trim(),
+          firstName: firstName.trim(),
           middleName: params.middleName?.trim() || "",
           lastName: params.lastName.trim(),
           email: params.email.trim().toLowerCase(),
@@ -143,51 +255,146 @@ const UsersPage: React.FC = () => {
           dateOfJoin: formattedDate,
           workerType: params.workerType || "W2",
           jobTitle: params.jobTitle.trim(),
-          companyLocationCategory: params.companyLocationCategory || "Remote",
-          code: params.code.toUpperCase(),
+          companyLocationCategory: "Remote",
+          stateCode: params.code.toUpperCase(), // Add stateCode field
+          code: params.code.toUpperCase(),      // Keep code field
           companyLocationId: ""
         };
 
-        // Using api instance with built-in authorization
+        // Log the state code specifically
+        console.log('State Code:', params.code);
+        console.log('Formatted State Code:', params.code.toUpperCase());
+
+        const requestPayload = {
+          method: "addUser",
+          user: {
+            ...newUser,
+            stateCode: params.code.toUpperCase(), // Add at root level too
+          }
+        };
+
+        // Log the full payload
+        console.log('Full Request Payload:', JSON.stringify(requestPayload, null, 2));
+
         const response = await api.post(
           'https://sandbox.rollfi.xyz/adminPortal',
-          {
-            method: "addUser",
-            user: newUser
-          }
+          requestPayload
         );
 
-        if (!response.data || response.data.error) {
-          throw new Error(response.data?.error?.message || 'Failed to add user');
-        }
+        // Log the full response for debugging
+        console.log('Full Response:', JSON.stringify(response.data, null, 2));
 
-        await fetchUsers();
-        return `✅ New team member added successfully!
-
-Details:
-👤 ${params.firstName} ${params.lastName}
-📧 ${params.email}
-📱 ${params.phoneNumber}
-💼 ${params.jobTitle}
-📍 ${params.code}
-
-Would you like to:
-1. Add another team member
-2. View all team members
-3. Update this member's information`;
-      } catch (error: any) {
-        const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
-        throw new Error(`⚠️ ${errorMessage}`);
+        return response.data;
+      } catch (error) {
+        console.error('Error in addUser handler:', error);
+        throw error;
       }
     }
   });
 
-  // Add a Copilot readable for the form data
+  // Make user data readable by Copilot
   useCopilotReadable({
-    name: "addUserForm",
-    description: "Current state of the add user form",
-    value: formData
+    name: "usersList",
+    description: "List of all users with their details",
+    value: users.map(user => ({
+      userId: user.userID,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      jobTitle: user.jobTitle,
+      status: user.status,
+      workerType: user.workerType.workerType
+    }))
   });
+
+  // Add Copilot instructions for updating users
+  useCopilotAdditionalInstructions({
+    instructions: `
+    When updating user details:
+    1. First ask for the user ID to update
+    2. Verify the user exists and show current details
+    3. Ask which fields need to be updated
+    4. Validate each field:
+       - Names should not contain numbers
+       - Phone number should be 10 digits
+       - Date format should be YYYY-MM-DD
+       - Worker type must be W2 or 1099
+       - Location must be Remote or On-site
+       - State code must be valid two-letter US state code
+    5. Confirm all changes before submitting
+    6. Show success message or error details
+    `,
+    available: "enabled"
+  });
+
+  // Update User Action
+  useCopilotAction({
+    name: "updateUser",
+    description: "Update existing user details",
+    parameters: [
+      { name: "userId", type: "string", description: "User ID to update", required: true },
+      { name: "firstName", type: "string", description: "Updated first name" },
+      { name: "lastName", type: "string", description: "Updated last name" },
+      { name: "phoneNumber", type: "string", description: "Updated phone number" },
+      { name: "dateOfJoin", type: "string", description: "Date of joining (YYYY-MM-DD)" },
+      { name: "workerType", type: "string", description: "Worker type (W2 or 1099)" },
+      { name: "jobTitle", type: "string", description: "Job title" },
+      { name: "companyLocationCategory", type: "string", description: "Location category (Remote or On-site)" },
+      { name: "code", type: "string", description: "State code (e.g., FL)" }
+    ],
+    handler: async (params) => {
+      try {
+        // Validate inputs
+        if (!params.userId) throw new Error("User ID is required");
+        
+        // Format phone number if provided
+        const formattedPhone = params.phoneNumber ? 
+          params.phoneNumber.replace(/\D/g, '') : undefined;
+
+        // Create update object matching exact API format
+        const userUpdate = {
+          userId: params.userId,
+          firstName: params.firstName,
+          lastName: params.lastName,
+          phoneNumber: formattedPhone,
+          dateOfJoin: params.dateOfJoin,
+          workerType: params.workerType,
+          jobTitle: params.jobTitle,
+          companyLocationCategory: params.companyLocationCategory,
+          code: params.code?.toUpperCase(),
+          companyLocationId: ""
+        };
+
+        // Log the update payload
+        console.log('Update payload:', JSON.stringify({
+          method: "updateUser",
+          user: userUpdate
+        }, null, 2));
+
+        const response = await api.put(
+          'https://sandbox.rollfi.xyz/adminPortal',
+          {
+            method: "updateUser",
+            user: userUpdate
+          }
+        );
+
+        // Log the response for debugging
+        console.log('Update response:', JSON.stringify(response.data, null, 2));
+
+        if (response.data.success) {
+          await fetchUsers();
+          return `Successfully updated user details for ID: ${params.userId}`;
+        } else {
+          throw new Error(response.data.message || 'Failed to update user');
+        }
+      } catch (error) {
+        console.error('Error in updateUser handler:', error);
+        throw new Error(`Failed to update user: ${error.message}`);
+      }
+    }
+  });
+
+  // No need for useCopilotReadable here as it's causing TypeScript errors
   useCopilotAction({
     name: 'switchDashboard',
     description: 'Switch to the dashboard view.',
@@ -245,10 +452,10 @@ Would you like to:
     parameters: [
       { name: "searchTerm", type: "string", description: "Name or email to search for" }
     ],
-    run: async (params) => {
+    handler: async (params: { searchTerm: string }) => {
       const searchResults = users.filter(user => 
         user.email.toLowerCase().includes(params.searchTerm.toLowerCase()) ||
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(params.searchTerm.toLowerCase())
+        `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().includes(params.searchTerm.toLowerCase())
       );
       
       if (searchResults.length === 0) {
@@ -256,7 +463,7 @@ Would you like to:
       }
 
       return `Found ${searchResults.length} users:\n${searchResults.map(user => 
-        `- ${user.firstName} ${user.lastName} (${user.email})`
+        `- ${user.firstName || user.user} ${user.lastName || ''} (${user.email})`
       ).join('\n')}`;
     }
   });
@@ -345,25 +552,53 @@ Would you like to:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let firstName = formData.firstName;
+      
+      // Validation checks
+      if (!firstName || firstName.trim().length === 0) {
+        setError('First name is required');
+        return;
+      }
+      
+      if (firstName.trim().length > 50) {
+        setError('First name must be maximum 50 characters');
+        return;
+      }
+      
+      if (/\d/.test(firstName)) {
+        setError('First name should not contain numbers');
+        return;
+      }
+
       const selectedCompanyStr = localStorage.getItem('selectedCompany');
       if (!selectedCompanyStr) throw new Error('No company selected');
-      
       const selectedCompany = JSON.parse(selectedCompanyStr);
-      
+
+      // Create user object with validated data
+      const newUser = {
+        companyId: selectedCompany.companyID,
+        userReferenceId: '',
+        firstName: firstName.trim(),
+        middleName: formData.middleName?.trim() || '',
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phoneNumber: formData.phoneNumber.replace(/\D/g, ''),
+        dateOfJoin: formData.dateOfJoin,
+        workerType: formData.workerType,
+        jobTitle: formData.jobTitle.trim(),
+        companyLocationCategory: formData.companyLocationCategory,
+        code: formData.code.toUpperCase(),
+        companyLocationId: ''
+      };
+
       const response = await api.post('https://sandbox.rollfi.xyz/adminPortal', {
         method: 'addUser',
-        user: {
-          companyId: selectedCompany.companyID,
-          userReferenceId: '',
-          ...formData,
-          companyLocationId: ''
-        }
+        user: newUser  // Use newUser directly instead of encodedUser
       });
 
       if (response.data) {
-        await fetchUsers(); // Wait for the users to be fetched
+        await fetchUsers();
         setShowAddModal(false);
-        // Reset form
         setFormData({
           firstName: '',
           middleName: '',
@@ -384,30 +619,26 @@ Would you like to:
   };
 
   // Add this to inject page-specific context, with null checks
-  useCopilotReadable({
-    name: "pageContext",
-    description: "Current page context for the Copilot",
-    value: {
-      prompt: PromptManager.generatePrompt({
-        currentPage: '/users',
-        availableActions: [
-          'Add new user',
-          'Search users',
-          'Update user information',
-          'Deactivate user'
-        ],
-        userData: {
-          role: 'admin',
-          permissions: ['manage_users', 'view_users']
-        },
-        companyData: selectedCompany ? {
-          name: selectedCompany.company,
-          type: selectedCompany.type,
-          employeeCount: users.length
-        } : undefined
-      })
-    }
-  });
+  const pageContext = {
+    prompt: PromptManager.generatePrompt({
+      currentPage: '/users',
+      availableActions: [
+        'Add new user',
+        'Search users',
+        'Update user information',
+        'Deactivate user'
+      ],
+      userData: {
+        role: 'admin',
+        permissions: ['manage_users', 'view_users']
+      },
+      companyData: selectedCompany ? {
+        name: selectedCompany.company,
+        type: selectedCompany.type,
+        employeeCount: users.length
+      } : undefined
+    })
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">

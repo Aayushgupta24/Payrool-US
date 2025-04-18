@@ -39,14 +39,15 @@ export const getUsersByCompanyName = async (companyName: string) => {
     companyName
   };
 
-  const { data } = await axios.get(
+  // Using POST with the correct URL format as shown in the curl example
+  const { data } = await axios.post(
     `${ROLLFI_BASE_URL}/reports`,
+    payload,
     {
-      data: payload,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-      },
+      }
     }
   );
 
@@ -60,7 +61,7 @@ export const addUsers = async (companyId: string, users: User[]) => {
   const payload = {
     method: 'addUsers',
     companyId,
-    users
+    users // Send users without encoding
   };
 
   const { data } = await axios.post(
@@ -102,5 +103,34 @@ export const deactivateUser = async (user: DeactivateUserPayload) => {
 
 // Helper function to add a single user
 export const addSingleUser = async (companyId: string, user: User) => {
-  return addUsers(companyId, [user]);
+  try {
+    const token = await getAccessToken();
+    
+    const payload = {
+      method: 'addUser',
+      user: {
+        ...user,
+        companyId,
+        code: user.code.toUpperCase()
+      }
+    };
+    
+    console.log('Sending payload:', payload);
+    
+    const { data } = await axios.post(
+      `${ROLLFI_BASE_URL}/adminPortal`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import CopilotProvider from './components/CopilotProvider';
+import { patchBtoa } from './utils/btoaPatch';
 import App from './App';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
@@ -31,6 +32,9 @@ import EmployerHelpPage from './pages/EmployerHelpPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+
+// Apply the btoa patch to handle non-Latin1 characters
+patchBtoa();
 
 const router = createBrowserRouter([
   {

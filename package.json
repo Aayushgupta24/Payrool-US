@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@copilotkit/react-core": "^1.8.5",
-    "@copilotkit/react-textarea": "^1.8.5",
-    "@copilotkit/react-ui": "^1.8.5",
-    "@copilotkit/runtime": "^1.8.5",
+    "@copilotkit/react-core": "^1.8.6",
+    "@copilotkit/react-textarea": "^1.8.6",
+    "@copilotkit/react-ui": "^1.8.6",
+    "@copilotkit/runtime": "^1.8.6",
     "@supabase/supabase-js": "^2.49.4",
     "@types/node": "^22.14.0",
     "axios": "^1.8.4",

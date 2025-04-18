@@ -4,7 +4,6 @@ import { CopilotSidebar } from '@copilotkit/react-ui';
 import { PromptManager } from '../services/promptManager';
 import { copilotService } from '../services/copilotService';
 import '@copilotkit/react-ui/styles.css';
-import { useCopilotAction } from '@copilotkit/react-core';
 
 interface CopilotProviderProps {
   children: React.ReactNode;
@@ -15,19 +14,43 @@ const CopilotProvider: React.FC<CopilotProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const updatePrompt = async () => {
-      const userData = await copilotService.getCurrentUser();
-      const companyData = await copilotService.getCurrentCompany();
-      const availableActions = await copilotService.getAvailableActions();
+      try {
+        // Get context data from available methods
+        const context = await copilotService.getFullContext();
+        
+        // Extract data from context
+        const userData = context.userData || { role: 'user' };
+        const companyData = context.company;
+        
+        // Define default available actions
+        const availableActions = [
+          'View dashboard',
+          'Manage users',
+          'Process payroll',
+          'View reports'
+        ];
 
-      const prompt = PromptManager.generatePrompt({
-        currentPage: window.location.pathname,
-        userRole: userData?.role,
-        availableActions,
-        userData,
-        companyData
-      });
+        const prompt = PromptManager.generatePrompt({
+          currentPage: window.location.pathname,
+          userRole: userData.role || 'user',
+          availableActions,
+          userData,
+          companyData
+        });
 
-      setDynamicPrompt(prompt);
+        setDynamicPrompt(prompt);
+      } catch (error) {
+        console.error('Error updating prompt:', error);
+        // Set a default prompt if there's an error
+        const defaultPrompt = PromptManager.generatePrompt({
+          currentPage: window.location.pathname,
+          userRole: 'user',
+          availableActions: ['View dashboard', 'Get help'],
+          userData: null,
+          companyData: null
+        });
+        setDynamicPrompt(defaultPrompt);
+      }
     };
 
     updatePrompt();
@@ -44,7 +67,6 @@ const CopilotProvider: React.FC<CopilotProviderProps> = ({ children }) => {
   return (
     <CopilotKit 
       publicApiKey={import.meta.env.VITE_COPILOT_PUBLIC_API_KEY}
-      chatLabel="Payroll AI Agent"
     >
       {children}
       <CopilotSidebar
@@ -61,19 +83,3 @@ const CopilotProvider: React.FC<CopilotProviderProps> = ({ children }) => {
 };
 
 export default CopilotProvider;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
