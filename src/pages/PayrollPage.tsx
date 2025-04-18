@@ -43,15 +43,14 @@ const PayrollPage: React.FC = () => {
     'October 30, 2024 to November 14, 2024 - Regular',
   ];
 
-  const handlePlaidSuccess = async (accessToken: string) => {
+  const handlePlaidSuccess = async (publicToken: string) => {
     try {
-      // Get payroll data using the access token
+      const accessToken = await plaidService.exchangePublicToken(publicToken);
       const payrollData = await plaidService.getPayrollData(accessToken);
       setPayrollProvider(payrollData);
-      // You might want to make an API call to your backend to store the connection
       console.log('Payroll provider connected:', payrollData);
     } catch (error) {
-      console.error('Error handling Plaid success:', error);
+      console.error('Error processing Plaid data:', error);
     }
   };
 
